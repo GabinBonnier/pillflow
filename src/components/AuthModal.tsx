@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { X, User, Lock, Mail, Sparkles, LogOut, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, User, Lock, Mail, Sparkles, LogOut, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -10,6 +10,7 @@ interface AuthModalProps {
   user: { email: string } | null;
   setUser: (user: { id: string; email: string } | null) => void;
   isLiveSupabase: boolean;
+  onOpenDeleteAccount?: () => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -18,6 +19,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   user,
   setUser,
   isLiveSupabase,
+  onOpenDeleteAccount,
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -80,9 +82,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     if (isLiveSupabase && supabase) {
       await supabase.auth.signOut();
     }
-    const demoUser = { id: 'demo-user-id', email: 'demo@pillflow.app' };
-    setUser(demoUser);
-    localStorage.setItem('pillflow_user', JSON.stringify(demoUser));
+    setUser(null);
+    localStorage.removeItem('pillflow_user');
     onClose();
   };
 
@@ -121,13 +122,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <p className="font-bold text-slate-800 text-base">{user.email}</p>
               </div>
 
-              <div className="pt-4 border-t border-slate-100">
+              <div className="pt-4 border-t border-slate-100 space-y-2">
                 <button
                   onClick={handleLogout}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition cursor-pointer"
+                  className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                   Se déconnecter
+                </button>
+
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenDeleteAccount && onOpenDeleteAccount();
+                  }}
+                  className="w-full py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                  Supprimer mon compte définitivement
                 </button>
               </div>
             </div>

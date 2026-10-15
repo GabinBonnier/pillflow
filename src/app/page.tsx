@@ -12,8 +12,10 @@ import { EmergencyGuideModal } from '@/components/EmergencyGuideModal';
 import { SymptomModal } from '@/components/SymptomModal';
 import { AuthModal } from '@/components/AuthModal';
 import { OnboardingFlow } from '@/components/OnboardingFlow';
+import { DeleteAccountModal } from '@/components/DeleteAccountModal';
 import { Mascot } from '@/components/Mascot';
 import { HelpCircle, ShieldCheck } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function Home() {
   const store = usePillStore();
@@ -21,7 +23,31 @@ export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
   const [selectedDateForSymptoms, setSelectedDateForSymptoms] = useState<string | null>(null);
+
+  const handleDeleteAccount = async () => {
+    if (store.user?.id) {
+      await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: store.user.id }),
+      });
+    }
+    if (store.isLiveSupabase && supabase) {
+      await supabase.auth.signOut().catch(() => {});
+    }
+    localStorage.clear();
+    store.setUser(null);
+  };
+
+  const handleLogout = async () => {
+    if (store.isLiveSupabase && supabase) {
+      await supabase.auth.signOut().catch(() => {});
+    }
+    localStorage.removeItem('pillflow_user');
+    store.setUser(null);
+  };
 
   // État de chargement initial
   if (!store.isClient || store.isLoading) {
@@ -64,6 +90,8 @@ export default function Home() {
         onOpenEmergency={() => setIsEmergencyOpen(true)}
         onOpenAuth={() => setIsAuthOpen(true)}
         onEnablePush={store.enablePushNotifications}
+        onOpenDeleteAccount={() => setIsDeleteAccountOpen(true)}
+        onLogout={handleLogout}
         user={store.user}
         isLiveSupabase={store.isLiveSupabase}
       />
@@ -213,6 +241,13 @@ export default function Home() {
         user={store.user}
         setUser={store.setUser}
         isLiveSupabase={store.isLiveSupabase}
+        onOpenDeleteAccount={() => setIsDeleteAccountOpen(true)}
+      />
+
+      <DeleteAccountModal
+        isOpen={isDeleteAccountOpen}
+        onClose={() => setIsDeleteAccountOpen(false)}
+        onConfirm={handleDeleteAccount}
       />
     </div>
   );
