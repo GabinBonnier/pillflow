@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { PillSettings, PillLog } from '@/types';
-import { Check, Clock, X, AlertCircle } from 'lucide-react';
+import { Check, Clock, X, Coffee } from 'lucide-react';
 import { format, addDays, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -23,7 +23,7 @@ export const BlisterPackView: React.FC<BlisterPackViewProps> = ({
   const breakDays = settings.pack_break_days || 7;
   const totalDays = activeDays + breakDays;
 
-  // Calcul des dates pour chaque case de la plaquette courante
+  // Calcul des dates pour chaque alvéole
   let cycleStart = new Date('2026-10-01T00:00:00');
   try {
     cycleStart = parseISO(settings.cycle_start_date || '2026-10-01');
@@ -38,7 +38,6 @@ export const BlisterPackView: React.FC<BlisterPackViewProps> = ({
     const isPast = pillNumber < currentDayInCycle;
     const isFuture = pillNumber > currentDayInCycle;
 
-    // Date correspondante dans ce cycle
     const dateObj = addDays(cycleStart, i);
     const dateStr = format(dateObj, 'yyyy-MM-dd');
     const dayOfWeek = format(dateObj, 'EEEEEE', { locale: fr }).toUpperCase(); // L, M, M, J, V, S, D
@@ -57,37 +56,35 @@ export const BlisterPackView: React.FC<BlisterPackViewProps> = ({
   });
 
   return (
-    <div className="rounded-3xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/80 p-5 sm:p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-2xl sm:rounded-3xl bg-white border border-rose-100/80 p-3.5 sm:p-6 shadow-xs overflow-hidden">
+      {/* En-tête */}
+      <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
         <div>
-          <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
+          <h3 className="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-1.5 sm:gap-2">
             <span>Plaquette en cours</span>
-            <span className="text-xs font-normal text-slate-500">
-              ({activeDays} comprimés {breakDays > 0 ? `+ ${breakDays} pause` : 'continu'})
+            <span className="text-[10px] sm:text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+              {activeDays} comp. {breakDays > 0 ? `+ ${breakDays}j pause` : 'continu'}
             </span>
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Vue réaliste de votre plaquette de pilules
+          <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+            Comprimé actuel : <strong className="text-rose-600 font-semibold">n°{currentDayInCycle}</strong>
           </p>
         </div>
 
-        {/* Légende rapide */}
-        <div className="hidden sm:flex items-center gap-3 text-[11px] text-slate-500">
+        {/* Légende compacte */}
+        <div className="flex items-center gap-2 text-[10px] sm:text-xs text-slate-500">
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> Pris
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> Pris
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block ring-2 ring-rose-200" /> Aujourd'hui
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-300 inline-block" /> Pause
+            <span className="w-2 h-2 rounded-full bg-rose-500 inline-block ring-2 ring-rose-200" /> Aujourd'hui
           </span>
         </div>
       </div>
 
-      {/* Rendu visuel de la plaquette alvéolée */}
-      <div className="p-4 sm:p-6 rounded-2xl bg-gradient-to-tr from-slate-100 via-rose-50/40 to-slate-100 border border-slate-200 shadow-inner">
-        <div className="grid grid-cols-7 gap-2 sm:gap-3">
+      {/* Rendu réaliste alvéolé - 100% Responsive sans débordement sur mobile */}
+      <div className="p-2 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-slate-100 via-rose-50/30 to-slate-100 border border-slate-200/80 shadow-inner">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center">
           {daysList.map((item) => {
             const isTaken = item.log?.status === 'taken' || item.log?.status === 'delayed';
             const isDelayed = item.log?.status === 'delayed';
@@ -97,60 +94,60 @@ export const BlisterPackView: React.FC<BlisterPackViewProps> = ({
               <div
                 key={item.pillNumber}
                 onClick={() => onSelectDay && onSelectDay(item.dateStr)}
-                className={`group relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all cursor-pointer ${
+                className={`relative flex flex-col items-center justify-center p-1 sm:p-2 rounded-lg sm:rounded-xl border transition-all cursor-pointer ${
                   item.isCurrent
-                    ? 'bg-white border-rose-400 ring-2 ring-rose-300 shadow-md transform scale-105 z-10'
+                    ? 'bg-white border-rose-400 ring-2 ring-rose-300 shadow-md transform scale-102 z-10'
                     : isTaken
-                    ? 'bg-emerald-50/70 border-emerald-200'
+                    ? 'bg-emerald-50/80 border-emerald-200'
                     : isMissed
                     ? 'bg-red-50/80 border-red-200'
                     : item.isBreak
-                    ? 'bg-slate-100/80 border-slate-200 opacity-70'
-                    : 'bg-white/80 border-slate-200 hover:border-rose-200'
+                    ? 'bg-slate-100/70 border-slate-200/60 opacity-60'
+                    : 'bg-white/90 border-slate-200/80 hover:border-rose-200'
                 }`}
               >
-                {/* Jour de la semaine */}
-                <span className="text-[10px] font-bold text-slate-400 mb-1">
+                {/* Jour de la semaine (L, M, M, J, V, S, D) */}
+                <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 mb-0.5 sm:mb-1">
                   {item.dayOfWeek}
                 </span>
 
-                {/* Alvéole / Pilule physique */}
+                {/* Comprimé tactile */}
                 <div
-                  className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${
                     isTaken
                       ? 'bg-emerald-500 text-white shadow-xs'
                       : isMissed
                       ? 'bg-red-500 text-white shadow-xs'
                       : item.isBreak
-                      ? 'bg-slate-200 text-slate-400 border border-dashed border-slate-300'
+                      ? 'bg-slate-200 text-slate-500 border border-dashed border-slate-300'
                       : item.isCurrent
-                      ? 'bg-gradient-to-tr from-rose-500 to-pink-500 text-white shadow-md animate-pulse'
-                      : 'bg-gradient-to-b from-rose-100 to-pink-50 text-rose-700 border border-rose-200 shadow-xs'
+                      ? 'bg-gradient-to-tr from-rose-500 to-pink-500 text-white shadow-sm ring-2 ring-rose-300 animate-pulse'
+                      : 'bg-gradient-to-b from-rose-100 to-pink-50 text-rose-700 border border-rose-200'
                   }`}
                 >
                   {isTaken ? (
-                    <Check className="w-4 h-4 stroke-[3]" />
+                    <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
                   ) : isMissed ? (
-                    <X className="w-4 h-4 stroke-[3]" />
+                    <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
                   ) : item.isBreak ? (
-                    <span className="text-[10px]">☕</span>
+                    <span className="text-[9px] sm:text-[10px]">☕</span>
                   ) : (
                     <span>{item.pillNumber}</span>
                   )}
                 </div>
 
-                {/* Petit label sous la pilule */}
-                <span className="text-[9px] text-slate-400 mt-1 font-mono">
+                {/* Label bas */}
+                <span className="text-[8px] sm:text-[9px] text-slate-400 mt-0.5 font-mono">
                   {item.isBreak ? 'Pause' : `n°${item.pillNumber}`}
                 </span>
 
-                {/* Indicateur de retard */}
+                {/* Badge retard */}
                 {isDelayed && (
                   <span
-                    className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-500 rounded-full text-white flex items-center justify-center"
+                    className="absolute -top-1 -right-1 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-amber-500 rounded-full text-white flex items-center justify-center"
                     title="Pris avec retard"
                   >
-                    <Clock className="w-2.5 h-2.5" />
+                    <Clock className="w-2 h-2" />
                   </span>
                 )}
               </div>

@@ -24,10 +24,10 @@ export const Mascot: React.FC<MascotProps> = ({
   className = '',
 }) => {
   const sizeMap = {
-    sm: { w: 64, h: 64, text: 'text-xs' },
-    md: { w: 96, h: 96, text: 'text-sm' },
-    lg: { w: 140, h: 140, text: 'text-base' },
-    xl: { w: 180, h: 180, text: 'text-lg' },
+    sm: { w: 56, h: 56, text: 'text-xs' },
+    md: { w: 80, h: 80, text: 'text-sm' },
+    lg: { w: 105, h: 105, text: 'text-base' },
+    xl: { w: 140, h: 140, text: 'text-lg' },
   };
 
   const { w, h } = sizeMap[size];

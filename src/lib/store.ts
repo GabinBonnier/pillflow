@@ -100,6 +100,10 @@ export function usePillStore() {
       }).catch(console.error);
     }
 
+    // Ticker régulier (toutes les 20 secondes) pour vérifier les rappels en heure française
+    const reminderInterval = setInterval(() => {
+      fetch('/api/cron/check-reminders?token=pillflow_secret_cron_token_2026').catch(() => {});
+    }, 20000);
     // Charger les données locales
     try {
       const storedSettings = localStorage.getItem('pillflow_settings');

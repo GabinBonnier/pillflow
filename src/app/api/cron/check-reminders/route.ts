@@ -14,10 +14,13 @@ async function handleCron(req: NextRequest) {
   try {
     const authHeader = req.headers.get('authorization');
     const tokenParam = req.nextUrl.searchParams.get('token');
+    const isVercelCron = req.headers.get('x-vercel-cron') === '1';
     const secret = process.env.CRON_SECRET || 'pillflow_secret_cron_token_2026';
 
     const isAuthorized =
-      authHeader === `Bearer ${secret}` || tokenParam === secret;
+      isVercelCron ||
+      authHeader === `Bearer ${secret}` ||
+      tokenParam === secret;
 
     if (!isAuthorized && process.env.NODE_ENV === 'production') {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
@@ -36,10 +39,26 @@ async function handleCron(req: NextRequest) {
       return NextResponse.json({ error: 'Base de données inaccessible' }, { status: 500 });
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
-    const now = new Date();
-    const currentHours = now.getHours();
-    const currentMinutes = now.getMinutes();
+    // Récupération de l'heure et date actuelles en heure française (Europe/Paris)
+    const parisFormatter = new Intl.DateTimeFormat('fr-FR', {
+      timeZone: 'Europe/Paris',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+    const parts = parisFormatter.formatToParts(new Date());
+    const getPart = (type: string) => parts.find((p) => p.type === type)?.value || '';
+
+    const currentYear = getPart('year');
+    const currentMonth = getPart('month');
+    const currentDay = getPart('day');
+    const todayStr = `${currentYear}-${currentMonth}-${currentDay}`;
+
+    const currentHours = Number(getPart('hour'));
+    const currentMinutes = Number(getPart('minute'));
     const currentTotalMinutes = currentHours * 60 + currentMinutes;
 
     // Récupérer tous les réglages actifs
@@ -67,31 +86,31 @@ async function handleCron(req: NextRequest) {
         .eq('date', todayStr)
         .maybeSingle();
 
-      const isTaken = log && log.status === 'taken';
+      const isTaken = log && (log.status === 'taken' || log.status === 'delayed');
       if (isTaken) {
         results.push({ userId: settings.user_id, status: 'already_taken' });
         continue;
       }
 
-      // Déterminer le type de rappel nécessaire
+      // Déterminer le type de rappel nécessaire selon le décalage (en minutes)
       let reminderType: 'initial' | 'delay_30m' | 'delay_60m' | null = null;
       let title = '';
       let body = '';
 
-      // Fenêtre heure H (ex: entre 0 et 4 minutes après l'heure)
-      if (settings.remind_at_pill_time && diffMinutes >= 0 && diffMinutes < 5) {
+      // Fenêtre 1 : Heure H programmée (de 0 à 29 minutes après)
+      if (settings.remind_at_pill_time && diffMinutes >= 0 && diffMinutes < 30) {
         reminderType = 'initial';
         title = `💊 PillFlow - C'est l'heure de votre pilule (${settings.scheduled_time})`;
-        body = `Prenez votre comprimé ${settings.pill_name || ''} pour rester sereine.`;
+        body = `Prenez votre comprimé ${settings.pill_name || ''} pour rester protégée.`;
       }
-      // Fenêtre H + 30 min (entre 30 et 35 minutes)
-      else if (settings.remind_after_30m && diffMinutes >= 30 && diffMinutes < 35) {
+      // Fenêtre 2 : Rappel +30 min (de 30 à 59 minutes après)
+      else if (settings.remind_after_30m && diffMinutes >= 30 && diffMinutes < 60) {
         reminderType = 'delay_30m';
         title = `⏰ PillFlow - Rappel (+30 min)`;
         body = `Avez-vous pris votre pilule ? Elle n'a pas encore été validée.`;
       }
-      // Fenêtre H + 1 heure (entre 60 et 65 minutes)
-      else if (settings.remind_after_60m && diffMinutes >= 60 && diffMinutes < 65) {
+      // Fenêtre 3 : Alerte renforcée +1 heure (à partir de 60 minutes)
+      else if (settings.remind_after_60m && diffMinutes >= 60) {
         reminderType = 'delay_60m';
         title = `⚠️ PillFlow - Alerte (+1h de retard)`;
         body = `Attention : votre pilule n'a toujours pas été confirmée. Pensez-y sans tarder !`;
@@ -102,11 +121,12 @@ async function handleCron(req: NextRequest) {
           userId: settings.user_id,
           status: 'no_reminder_window',
           diffMinutes,
+          currentTimeParis: `${currentHours}:${currentMinutes}`,
         });
         continue;
       }
 
-      // Vérifier si ce rappel a déjà été envoyé aujourd'hui
+      // Vérifier si ce type de rappel a déjà été envoyé aujourd'hui
       const { data: alreadySent } = await db
         .from('sent_reminders')
         .select('id')
@@ -124,13 +144,14 @@ async function handleCron(req: NextRequest) {
         continue;
       }
 
-      // Récupérer les abonnements Web Push de l'utilisateur
+      // Récupérer les abonnements Web Push (smartphone + PC)
       const { data: subscriptions } = await db
         .from('push_subscriptions')
         .select('*')
         .eq('user_id', settings.user_id);
 
       if (subscriptions && subscriptions.length > 0) {
+        let sentCount = 0;
         for (const sub of subscriptions) {
           try {
             await sendWebPush(
@@ -148,12 +169,13 @@ async function handleCron(req: NextRequest) {
                 ],
               }
             );
-          } catch (pushErr) {
-            console.error('Erreur envoi push à un endpoint:', pushErr);
+            sentCount++;
+          } catch (pushErr: any) {
+            console.error('Erreur push subscription:', pushErr?.message);
           }
         }
 
-        // Marquer le rappel comme envoyé
+        // Marquer le rappel comme envoyé en base pour éviter les doublons
         await db.from('sent_reminders').insert({
           user_id: settings.user_id,
           date: todayStr,
@@ -164,6 +186,7 @@ async function handleCron(req: NextRequest) {
           userId: settings.user_id,
           status: 'sent',
           reminderType,
+          devicesNotified: sentCount,
         });
       } else {
         results.push({
@@ -175,8 +198,10 @@ async function handleCron(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      timeZone: 'Europe/Paris',
+      currentTime: `${String(currentHours).padStart(2, '0')}:${String(currentMinutes).padStart(2, '0')}`,
+      date: todayStr,
       processed: results.length,
-      timestamp: new Date().toISOString(),
       results,
     });
   } catch (error: any) {
