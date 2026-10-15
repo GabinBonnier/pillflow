@@ -412,7 +412,10 @@ export function usePillStore() {
       setPushPermission(permission);
 
       if (permission !== 'granted') {
-        return { success: false, message: 'La permission de notification a été refusée.' };
+        return {
+          success: false,
+          message: 'Permission refusée. Rendez-vous dans Réglages iPhone > Notifications > PillFlow pour autoriser les alertes.',
+        };
       }
 
       const registration = await navigator.serviceWorker.ready;
@@ -441,17 +444,31 @@ export function usePillStore() {
 
       setPushSubscription(subscription);
 
+      // Résoudre l'ID utilisateur
+      let resolvedUserId = user?.id;
+      if (!resolvedUserId && typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('pillflow_user');
+          if (stored) resolvedUserId = JSON.parse(stored)?.id;
+        } catch (e) {}
+      }
+
       // Enregistrer auprès du backend
-      await fetch('/api/webpush/subscribe', {
+      const res = await fetch('/api/webpush/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           subscription,
-          userId: user?.id || 'demo-user-id',
+          userId: resolvedUserId,
         }),
       });
 
-      return { success: true, message: 'Notifications Push activées avec succès !' };
+      const resData = await res.json();
+      if (!res.ok) {
+        return { success: false, message: resData.error || 'Erreur lors de l’enregistrement de l’appareil.' };
+      }
+
+      return { success: true, message: 'Appareil connecté aux notifications push avec succès !' };
     } catch (err: any) {
       console.error('Erreur activation notifications:', err);
       return { success: false, message: err?.message || 'Erreur lors de l’activation.' };
@@ -460,34 +477,60 @@ export function usePillStore() {
 
   // Déclencher un test de notification
   const triggerPushTest = async (type: 'initial' | 'delay_30m' | 'delay_60m') => {
-    if (!pushSubscription) {
-      // Si la notification native est accordée mais sans push distant, déclencher une notification locale
-      if (Notification.permission === 'granted') {
+    let currentSub = pushSubscription;
+    if (!currentSub && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        currentSub = await reg.pushManager.getSubscription();
+        if (currentSub) setPushSubscription(currentSub);
+      } catch (e) {}
+    }
+
+    if (!currentSub) {
+      const enableRes = await enablePushNotifications();
+      if (!enableRes.success) {
+        return enableRes;
+      }
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        currentSub = await reg.pushManager.getSubscription();
+      } catch (e) {}
+    }
+
+    if (currentSub) {
+      try {
+        const res = await fetch('/api/webpush/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: currentSub, type }),
+        });
+        const data = await res.json();
+        return data;
+      } catch (e: any) {
+        return { success: false, message: e.message };
+      }
+    }
+
+    // Fallback Service Worker notification (compatible iOS)
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator && Notification.permission === 'granted') {
+      try {
+        const reg = await navigator.serviceWorker.ready;
         const titles = {
-          initial: "💊 PillFlow - C'est l'heure de votre pilule ! (20:00)",
+          initial: `💊 PillFlow - C'est l'heure de votre pilule ! (${settings.scheduled_time})`,
           delay_30m: "⏰ PillFlow - Rappel (+30 min) : Avez-vous pris votre pilule ?",
           delay_60m: "⚠️ PillFlow - Alerte (+1h) : Pilule non validée !",
         };
-        new Notification(titles[type], {
+        await reg.showNotification(titles[type], {
           body: "Cliquez pour ouvrir l'application et confirmer votre prise.",
           icon: '/icons/icon-192.svg',
+          tag: `pill-${type}`,
         });
-        return { success: true, message: 'Notification locale envoyée !' };
+        return { success: true, message: 'Notification envoyée sur votre écran !' };
+      } catch (swErr: any) {
+        return { success: false, message: swErr?.message || 'Erreur affichage notification.' };
       }
-      return { success: false, message: 'Veuillez d’abord activer les notifications.' };
     }
 
-    try {
-      const res = await fetch('/api/webpush/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription: pushSubscription, type }),
-      });
-      const data = await res.json();
-      return data;
-    } catch (e: any) {
-      return { success: false, message: e.message };
-    }
   };
 
   // Calcul du jour actuel dans la plaquette

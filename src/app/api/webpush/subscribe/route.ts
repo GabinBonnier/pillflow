@@ -17,20 +17,32 @@ export async function POST(req: NextRequest) {
     if (isSupabaseConfigured()) {
       const db = getServiceSupabase() || supabase;
       if (db) {
-        const { error } = await db.from('push_subscriptions').upsert(
-          {
-            user_id: userId || 'demo-user-id',
-            endpoint: subscription.endpoint,
-            p256dh: subscription.keys.p256dh,
-            auth: subscription.keys.auth,
-            user_agent: req.headers.get('user-agent') || 'unknown',
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'endpoint' }
-        );
+        let finalUserId = userId;
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId || '');
+        if (!isUuid) {
+          const { data: firstProfile } = await db.from('profiles').select('id').limit(1).maybeSingle();
+          if (firstProfile) {
+            finalUserId = firstProfile.id;
+          }
+        }
 
-        if (error) {
-          console.error('Erreur Supabase enregistrement subscription:', error);
+        if (finalUserId) {
+          const { error } = await db.from('push_subscriptions').upsert(
+            {
+              user_id: finalUserId,
+              endpoint: subscription.endpoint,
+              p256dh: subscription.keys.p256dh,
+              auth: subscription.keys.auth,
+              user_agent: req.headers.get('user-agent') || 'unknown',
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'endpoint' }
+          );
+
+          if (error) {
+            console.error('Erreur Supabase enregistrement subscription:', error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
+          }
         }
       }
     }
