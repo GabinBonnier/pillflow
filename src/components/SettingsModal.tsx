@@ -61,7 +61,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Nom commercial de la pilule
                 </label>
                 <input
@@ -71,13 +71,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     setFormData({ ...formData, pill_name: e.target.value })
                   }
                   placeholder="Ex: Optilova 20, Leeloo Gé, Cerazette..."
-                  className="w-full p-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-300 focus:outline-none"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Tolérance de retard autorisée
                 </label>
                 <select
@@ -88,7 +88,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       tolerance_hours: Number(e.target.value),
                     })
                   }
-                  className="w-full p-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-300 focus:outline-none bg-white"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 bg-white text-slate-900 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none"
                 >
                   <option value={12}>12 heures (Pilules combinées, Désogestrel)</option>
                   <option value={3}>3 heures (Microprogestatives pures)</option>
@@ -105,7 +105,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Heure quotidienne de prise
                 </label>
                 <input
@@ -114,13 +114,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onChange={(e) =>
                     setFormData({ ...formData, scheduled_time: e.target.value })
                   }
-                  className="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-rose-600 focus:ring-2 focus:ring-rose-300 focus:outline-none bg-white"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 text-sm font-bold text-rose-600 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none bg-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Comprimés actifs / plaquette
                 </label>
                 <input
@@ -134,14 +134,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       pack_active_days: Number(e.target.value),
                     })
                   }
-                  className="w-full p-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-300 focus:outline-none"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 bg-white text-slate-900 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none"
                   required
                 />
                 <span className="text-[10px] text-slate-400">Classique : 21 ou 28</span>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Jours de pause (ou placebo)
                 </label>
                 <input
@@ -155,7 +155,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       pack_break_days: Number(e.target.value),
                     })
                   }
-                  className="w-full p-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-300 focus:outline-none"
+                  className="w-full p-2.5 rounded-xl border-2 border-slate-300 bg-white text-slate-900 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none"
                   required
                 />
                 <span className="text-[10px] text-slate-400">0 si prise continue</span>
@@ -163,7 +163,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
 
             <div className="mt-3">
-              <label className="block text-xs font-medium text-slate-600 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Date de début de la plaquette actuelle
               </label>
               <input
@@ -172,7 +172,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, cycle_start_date: e.target.value })
                 }
-                className="w-full sm:w-1/2 p-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-300 focus:outline-none bg-white"
+                className="w-full sm:w-1/2 p-2.5 rounded-xl border-2 border-slate-300 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none bg-white text-slate-900"
               />
             </div>
           </div>
@@ -283,7 +283,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 setFormData({ ...formData, partner_email: e.target.value })
               }
               placeholder="partenaire@exemple.com"
-              className="w-full p-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-300 focus:outline-none"
+              className="w-full p-2.5 rounded-xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none"
             />
           </div>
 

@@ -311,7 +311,11 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
         onComplete(localUser, userSettings, alreadyTakenToday);
       }
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Impossible de créer le compte. Vérifiez les informations.');
+      let msg = err?.message || 'Impossible de créer le compte. Vérifiez les informations.';
+      if (msg.includes('Database error saving new user') || msg.includes('schema cache')) {
+        msg = "Erreur base de données Supabase : les tables n'ont pas encore été créées dans votre projet. Veuillez exécuter le script SQL dans votre console Supabase SQL Editor.";
+      }
+      setErrorMessage(msg);
     } finally {
       setLoading(false);
     }
@@ -388,7 +392,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="ton-email@exemple.com"
                     required
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-400 focus:outline-none"
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-base font-medium focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none shadow-xs"
                   />
                 </div>
               </div>
@@ -398,14 +402,14 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                   Mot de passe
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-400 focus:outline-none"
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-base font-medium focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none shadow-xs"
                   />
                 </div>
               </div>
@@ -437,7 +441,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Ex: Emma, Léa, Camille..."
                   onKeyDown={(e) => e.key === 'Enter' && nextStep()}
-                  className="w-full p-4 rounded-2xl border-2 border-slate-200 text-base font-semibold focus:border-rose-400 focus:ring-2 focus:ring-rose-100 focus:outline-none"
+                  className="w-full p-4 rounded-2xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-base font-semibold focus:border-rose-500 focus:ring-2 focus:ring-rose-100 focus:outline-none shadow-xs"
                 />
               </div>
             )}
@@ -485,7 +489,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                     type="time"
                     value={scheduledTime}
                     onChange={(e) => setScheduledTime(e.target.value)}
-                    className="p-4 rounded-2xl border-2 border-rose-300 bg-rose-50/40 text-2xl font-extrabold text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    className="p-4 rounded-2xl border-2 border-rose-400 bg-white text-2xl font-extrabold text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 shadow-sm"
                   />
                 </div>
 
@@ -776,28 +780,28 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Adresse email
                   </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="ton-email@exemple.com"
                       required
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-400 focus:outline-none"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-base font-medium focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none shadow-xs"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Mot de passe
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                     <input
                       type="password"
                       value={password}
@@ -805,7 +809,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                       placeholder="Au moins 6 caractères"
                       required
                       minLength={6}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-400 focus:outline-none"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-base font-medium focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none shadow-xs"
                     />
                   </div>
                 </div>

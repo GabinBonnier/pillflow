@@ -1,4 +1,8 @@
+-- ==============================================================================
 -- Schéma Supabase pour l'application Pilule Tracker (PillFlow)
+-- À exécuter dans la console Supabase (SQL Editor)
+-- Ce script est 100% idempotent (peut être réexécuté sans erreur)
+-- ==============================================================================
 
 -- 1. Table des profils utilisateurs
 create table if not exists public.profiles (
@@ -53,7 +57,7 @@ create table if not exists public.symptom_logs (
   date date not null,
   mood text check (mood in ('great', 'good', 'neutral', 'sad', 'anxious', 'irritable')),
   bleeding text check (bleeding in ('none', 'spotting', 'light', 'medium', 'heavy')),
-  symptoms jsonb default '[]'::jsonb, -- ['headache', 'cramps', 'nausea', etc.]
+  symptoms jsonb default '[]'::jsonb,
   notes text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   unique(user_id, date)
@@ -81,7 +85,7 @@ create table if not exists public.sent_reminders (
   unique(user_id, date, reminder_type)
 );
 
--- Sécurité Row Level Security (RLS)
+-- Activation de Row Level Security (RLS)
 alter table public.profiles enable row level security;
 alter table public.pill_settings enable row level security;
 alter table public.pill_logs enable row level security;
@@ -89,42 +93,75 @@ alter table public.symptom_logs enable row level security;
 alter table public.push_subscriptions enable row level security;
 alter table public.sent_reminders enable row level security;
 
--- Politiques RLS (chaque utilisateur n'accède qu'à ses propres données)
+-- Politiques RLS (nettoyage puis création propre)
+drop policy if exists "Users can view own profile" on public.profiles;
+drop policy if exists "Users can update own profile" on public.profiles;
+drop policy if exists "Users can insert own profile" on public.profiles;
 create policy "Users can view own profile" on public.profiles for select using (auth.uid() = id);
 create policy "Users can update own profile" on public.profiles for update using (auth.uid() = id);
+create policy "Users can insert own profile" on public.profiles for insert with check (auth.uid() = id);
 
+drop policy if exists "Users can view own settings" on public.pill_settings;
+drop policy if exists "Users can insert own settings" on public.pill_settings;
+drop policy if exists "Users can update own settings" on public.pill_settings;
 create policy "Users can view own settings" on public.pill_settings for select using (auth.uid() = user_id);
 create policy "Users can insert own settings" on public.pill_settings for insert with check (auth.uid() = user_id);
 create policy "Users can update own settings" on public.pill_settings for update using (auth.uid() = user_id);
 
+drop policy if exists "Users can view own pill logs" on public.pill_logs;
+drop policy if exists "Users can insert own pill logs" on public.pill_logs;
+drop policy if exists "Users can update own pill logs" on public.pill_logs;
+drop policy if exists "Users can delete own pill logs" on public.pill_logs;
 create policy "Users can view own pill logs" on public.pill_logs for select using (auth.uid() = user_id);
 create policy "Users can insert own pill logs" on public.pill_logs for insert with check (auth.uid() = user_id);
 create policy "Users can update own pill logs" on public.pill_logs for update using (auth.uid() = user_id);
 create policy "Users can delete own pill logs" on public.pill_logs for delete using (auth.uid() = user_id);
 
+drop policy if exists "Users can view own symptom logs" on public.symptom_logs;
+drop policy if exists "Users can insert own symptom logs" on public.symptom_logs;
+drop policy if exists "Users can update own symptom logs" on public.symptom_logs;
+drop policy if exists "Users can delete own symptom logs" on public.symptom_logs;
 create policy "Users can view own symptom logs" on public.symptom_logs for select using (auth.uid() = user_id);
 create policy "Users can insert own symptom logs" on public.symptom_logs for insert with check (auth.uid() = user_id);
 create policy "Users can update own symptom logs" on public.symptom_logs for update using (auth.uid() = user_id);
 create policy "Users can delete own symptom logs" on public.symptom_logs for delete using (auth.uid() = user_id);
 
+drop policy if exists "Users can view own subscriptions" on public.push_subscriptions;
+drop policy if exists "Users can insert own subscriptions" on public.push_subscriptions;
+drop policy if exists "Users can delete own subscriptions" on public.push_subscriptions;
 create policy "Users can view own subscriptions" on public.push_subscriptions for select using (auth.uid() = user_id);
 create policy "Users can insert own subscriptions" on public.push_subscriptions for insert with check (auth.uid() = user_id);
 create policy "Users can delete own subscriptions" on public.push_subscriptions for delete using (auth.uid() = user_id);
+
+drop policy if exists "Users can view own sent reminders" on public.sent_reminders;
+drop policy if exists "Users can insert own sent reminders" on public.sent_reminders;
+create policy "Users can view own sent reminders" on public.sent_reminders for select using (auth.uid() = user_id);
+create policy "Users can insert own sent reminders" on public.sent_reminders for insert with check (auth.uid() = user_id);
 
 -- Trigger automatique pour créer un profil et les réglages par défaut à l'inscription
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
   insert into public.profiles (id, email, full_name)
-  values (new.id, new.email, new.raw_user_meta_data->>'full_name');
+  values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name', ''))
+  on conflict (id) do update
+  set email = excluded.email,
+      full_name = coalesce(excluded.full_name, public.profiles.full_name);
 
   insert into public.pill_settings (user_id, scheduled_time, pack_active_days, pack_break_days)
-  values (new.id, '20:00', 21, 7);
+  values (new.id, '20:00', 21, 7)
+  on conflict (user_id) do nothing;
 
   return new;
+exception
+  when others then
+    -- Ne bloque jamais la création dans auth.users même en cas d'anomalie
+    return new;
 end;
 $$ language plpgsql security definer;
 
-create or replace trigger on_auth_user_created
+-- Rattachement du trigger à auth.users
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();

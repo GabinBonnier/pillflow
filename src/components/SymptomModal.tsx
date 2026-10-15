@@ -209,7 +209,7 @@ export const SymptomModal: React.FC<SymptomModalProps> = ({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Ex: Pris au réveil avec de l’eau, fatigue passagère..."
               rows={3}
-              className="w-full p-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+              className="w-full p-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
             />
           </div>
         </div>
