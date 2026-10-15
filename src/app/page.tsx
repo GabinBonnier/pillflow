@@ -102,19 +102,29 @@ export default function Home() {
         <div className="rounded-3xl bg-gradient-to-r from-rose-50 via-pink-50 to-white dark:from-slate-900 dark:via-slate-800/80 dark:to-slate-900 border border-rose-200/80 dark:border-slate-800 p-4 sm:p-5 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3 sm:gap-4">
             <Mascot
-              mood={store.isTodayTaken ? 'excited' : 'waving'}
+              mood={
+                !store.isTodayTaken
+                  ? 'waving'
+                  : store.todayLog?.status === 'missed'
+                  ? 'cautious'
+                  : 'excited'
+              }
               size="sm"
             />
             <div>
               <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">
-                {store.isTodayTaken
-                  ? 'Bravo ! Ta pilule du jour est validée ✨'
-                  : `Coucou ! Ton comprimé est prévu à ${store.settings.scheduled_time} 🌸`}
+                {!store.isTodayTaken
+                  ? `Coucou ! Ton comprimé est prévu à ${store.settings.scheduled_time} 🌸`
+                  : store.todayLog?.status === 'missed'
+                  ? 'Prise enregistrée avec retard ⚠️'
+                  : 'Bravo ! Ta pilule du jour est validée ✨'}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {store.isTodayTaken
-                  ? 'Pilly veille au grain. Passe une excellente journée sereine !'
-                  : 'N’oublie pas : je te relance à +30min et +1h si besoin.'}
+                {!store.isTodayTaken
+                  ? 'N’oublie pas : je te relance à +30min et +1h si besoin.'
+                  : store.todayLog?.status === 'missed'
+                  ? 'La tolérance de 12h a été dépassée : pensez à vous protéger ces 7 prochains jours.'
+                  : 'Pilly veille au grain. Passe une excellente journée sereine !'}
               </p>
             </div>
           </div>

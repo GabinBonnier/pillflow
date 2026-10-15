@@ -96,7 +96,8 @@ async function handleCron(req: NextRequest) {
         .eq('date', todayStr)
         .maybeSingle();
 
-      const isTaken = log && (log.status === 'taken' || log.status === 'delayed');
+      const isTaken =
+        log && (log.status === 'taken' || log.status === 'delayed' || log.status === 'missed');
       if (isTaken) {
         results.push({ userId: settings.user_id, status: 'already_taken' });
         continue;

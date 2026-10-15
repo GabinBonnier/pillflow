@@ -86,8 +86,9 @@ export const BlisterPackView: React.FC<BlisterPackViewProps> = ({
       <div className="p-2 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-slate-100 via-rose-50/30 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 border border-slate-200/80 dark:border-slate-800 shadow-inner">
         <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center">
           {daysList.map((item) => {
-            const isTaken = item.log?.status === 'taken' || item.log?.status === 'delayed';
+            const isTaken = item.log?.status === 'taken' || item.log?.status === 'delayed' || item.log?.status === 'missed';
             const isDelayed = item.log?.status === 'delayed';
+            const isLateMissed = item.log?.status === 'missed';
             const isMissed = item.isPast && !isTaken && !item.isBreak;
 
             return (
@@ -97,6 +98,8 @@ export const BlisterPackView: React.FC<BlisterPackViewProps> = ({
                 className={`relative flex flex-col items-center justify-center p-1 sm:p-2 rounded-lg sm:rounded-xl border transition-all cursor-pointer ${
                   item.isCurrent
                     ? 'bg-white dark:bg-slate-800 border-rose-400 dark:border-rose-500 ring-2 ring-rose-300 dark:ring-rose-500/50 shadow-md transform scale-102 z-10'
+                    : isLateMissed
+                    ? 'bg-amber-50/80 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60'
                     : isTaken
                     ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60'
                     : isMissed
@@ -114,7 +117,9 @@ export const BlisterPackView: React.FC<BlisterPackViewProps> = ({
                 {/* Comprimé tactile */}
                 <div
                   className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${
-                    isTaken
+                    isLateMissed
+                      ? 'bg-amber-500 text-white shadow-xs'
+                      : isTaken
                       ? 'bg-emerald-500 text-white shadow-xs'
                       : isMissed
                       ? 'bg-red-500 text-white shadow-xs'

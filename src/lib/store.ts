@@ -574,7 +574,12 @@ export function usePillStore() {
 
   const currentDayInCycle = (daysSinceStart % totalCycleDays) + 1; // 1 to totalCycleDays
   const isBreakPeriod = currentDayInCycle > settings.pack_active_days;
-  const isTodayTaken = logs[todayStr]?.status === 'taken' || logs[todayStr]?.status === 'delayed';
+  const isTodayTaken = Boolean(
+    logs[todayStr] &&
+      (logs[todayStr].status === 'taken' ||
+        logs[todayStr].status === 'delayed' ||
+        logs[todayStr].status === 'missed')
+  );
 
   // Calcul de la série (streak)
   let streak = 0;

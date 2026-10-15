@@ -110,10 +110,22 @@ export const DailyTakeCard: React.FC<DailyTakeCardProps> = ({
               Semaine de pause
             </span>
           ) : isTodayTaken ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              Validée aujourd'hui
-            </span>
+            todayLog?.status === 'missed' ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 text-xs font-semibold">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                Validée avec retard critique
+              </span>
+            ) : todayLog?.status === 'delayed' ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 text-xs font-semibold">
+                <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                Validée avec retard
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                Validée à l’heure
+              </span>
+            )
           ) : (
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60 text-xs font-semibold">
               <Clock className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" />
@@ -138,18 +150,37 @@ export const DailyTakeCard: React.FC<DailyTakeCardProps> = ({
           </div>
         ) : isTodayTaken ? (
           <div className="py-2 sm:py-4">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none mb-3 sm:mb-4 animate-in zoom-in-90 duration-300">
-              <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100">C'est fait pour aujourd'hui !</h3>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            {todayLog?.status === 'missed' ? (
+              <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white shadow-lg shadow-amber-200 dark:shadow-none mb-3 sm:mb-4 animate-in zoom-in-90 duration-300">
+                <AlertTriangle className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+            ) : (
+              <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none mb-3 sm:mb-4 animate-in zoom-in-90 duration-300">
+                <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+            )}
+
+            <h3 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100">
+              {todayLog?.status === 'missed'
+                ? 'Prise validée (hors délai de tolérance)'
+                : "C'est fait pour aujourd'hui !"}
+            </h3>
+
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
               Prise enregistrée
               {todayLog?.taken_at
                 ? ` à ${format(new Date(todayLog.taken_at), 'HH:mm')}`
                 : ''}
-              {todayLog?.delay_minutes && todayLog.delay_minutes > 15
-                ? ` (décalage de ${todayLog.delay_minutes} min)`
-                : ' • À l’heure ✨'}
+              {todayLog?.status === 'missed' ? (
+                <span className="block mt-1 text-amber-600 dark:text-amber-400 font-semibold">
+                  ⚠️ Décalage de {Math.floor((todayLog.delay_minutes || 0) / 60)}h
+                  {(todayLog.delay_minutes || 0) % 60}m (tolérance de {settings.tolerance_hours}h dépassée). Utilisez un préservatif durant 7 jours.
+                </span>
+              ) : todayLog?.delay_minutes && todayLog.delay_minutes > 15 ? (
+                ` (décalage de ${todayLog.delay_minutes} min)`
+              ) : (
+                ' • À l’heure ✨'
+              )}
             </p>
 
             <button
