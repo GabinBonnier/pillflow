@@ -244,6 +244,11 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
 
     try {
       if (isSupabaseConfigured() && supabase) {
+        const detectedTimezone =
+          typeof Intl !== 'undefined'
+            ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Paris'
+            : 'Europe/Paris';
+
         // 1. Créer le compte dans Supabase Auth
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email,
@@ -251,6 +256,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
           options: {
             data: {
               full_name: firstName,
+              timezone: detectedTimezone,
             },
           },
         });
@@ -259,21 +265,47 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
 
         const userId = authData.user?.id || 'demo-user-id';
 
-        // 2. Enregistrer les réglages personnalisés
-        await supabase.from('pill_settings').upsert({
-          user_id: userId,
-          ...userSettings,
-        });
+        // 2. Mettre à jour le profil avec le fuseau horaire
+        await supabase
+          .from('profiles')
+          .update({
+            full_name: firstName,
+            timezone: detectedTimezone,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', userId);
 
-        // 3. Si l'utilisateur a indiqué avoir déjà pris son comprimé aujourd'hui
-        if (alreadyTakenToday && !inBreakPeriod) {
-          await supabase.from('pill_logs').upsert({
+        // 3. Enregistrer les réglages personnalisés avec onConflict explicite
+        const { error: settingsError } = await supabase.from('pill_settings').upsert(
+          {
             user_id: userId,
-            date: todayStr,
-            status: 'taken',
-            taken_at: new Date().toISOString(),
-            notes: `Comprimé n°${currentPillNumber} validé lors du questionnaire`,
-          });
+            ...userSettings,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id' }
+        );
+
+        if (settingsError) {
+          console.error('Erreur enregistrement réglages onboarding:', settingsError);
+          throw settingsError;
+        }
+
+        // 4. Si l'utilisateur a indiqué avoir déjà pris son comprimé aujourd'hui
+        if (alreadyTakenToday && !inBreakPeriod) {
+          const { error: logError } = await supabase.from('pill_logs').upsert(
+            {
+              user_id: userId,
+              date: todayStr,
+              status: 'taken',
+              taken_at: new Date().toISOString(),
+              notes: `Comprimé n°${currentPillNumber} validé lors du questionnaire`,
+            },
+            { onConflict: 'user_id,date' }
+          );
+
+          if (logError) {
+            console.warn('Erreur pill_log initial onboarding:', logError);
+          }
         }
 
         confetti({

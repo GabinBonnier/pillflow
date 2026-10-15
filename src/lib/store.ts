@@ -270,9 +270,34 @@ export function usePillStore() {
 
       // Sync Supabase
       if (isSupabaseConfigured() && supabase && user) {
+        const timeChanged =
+          newSettings.scheduled_time &&
+          newSettings.scheduled_time !== prev.scheduled_time;
+
+        // Si l'heure programmée a changé aujourd'hui, on réinitialise les sent_reminders du jour
+        // pour que l'alerte à la nouvelle heure ne soit pas bloquée par un ancien rappel
+        if (timeChanged) {
+          const today = format(new Date(), 'yyyy-MM-dd');
+          supabase
+            .from('sent_reminders')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('date', today)
+            .then(({ error }) => {
+              if (error) console.error('Erreur réinitialisation sent_reminders:', error);
+            });
+        }
+
         supabase
           .from('pill_settings')
-          .upsert({ user_id: user.id, ...updated }, { onConflict: 'user_id' })
+          .upsert(
+            {
+              user_id: user.id,
+              ...updated,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id' }
+          )
           .then(({ error }) => {
             if (error) console.error('Erreur sauvegarde réglages Supabase:', error);
           });

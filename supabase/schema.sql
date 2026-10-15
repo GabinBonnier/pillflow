@@ -142,11 +142,17 @@ create policy "Users can insert own sent reminders" on public.sent_reminders for
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, email, full_name)
-  values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name', ''))
+  insert into public.profiles (id, email, full_name, timezone)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'full_name', ''),
+    coalesce(new.raw_user_meta_data->>'timezone', 'Europe/Paris')
+  )
   on conflict (id) do update
   set email = excluded.email,
-      full_name = coalesce(excluded.full_name, public.profiles.full_name);
+      full_name = coalesce(excluded.full_name, public.profiles.full_name),
+      timezone = coalesce(excluded.timezone, public.profiles.timezone);
 
   insert into public.pill_settings (user_id, scheduled_time, pack_active_days, pack_break_days)
   values (new.id, '20:00', 21, 7)

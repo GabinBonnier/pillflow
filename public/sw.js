@@ -57,12 +57,16 @@ self.addEventListener('notificationclick', (event) => {
   const targetUrl = (event.notification.data && event.notification.data.url) || '/';
 
   if (action === 'take_pill') {
+    const notifData = event.notification.data || {};
+    const userId = notifData.userId || null;
+
     event.waitUntil(
       fetch('/api/pills/quick-take', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           source: 'push_action',
+          userId,
           timestamp: new Date().toISOString(),
         }),
       })

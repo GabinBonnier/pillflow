@@ -39,28 +39,6 @@ async function handleCron(req: NextRequest) {
       return NextResponse.json({ error: 'Base de données inaccessible' }, { status: 500 });
     }
 
-    // Récupération de l'heure et date actuelles en heure française (Europe/Paris)
-    const parisFormatter = new Intl.DateTimeFormat('fr-FR', {
-      timeZone: 'Europe/Paris',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-    const parts = parisFormatter.formatToParts(new Date());
-    const getPart = (type: string) => parts.find((p) => p.type === type)?.value || '';
-
-    const currentYear = getPart('year');
-    const currentMonth = getPart('month');
-    const currentDay = getPart('day');
-    const todayStr = `${currentYear}-${currentMonth}-${currentDay}`;
-
-    const currentHours = Number(getPart('hour'));
-    const currentMinutes = Number(getPart('minute'));
-    const currentTotalMinutes = currentHours * 60 + currentMinutes;
-
     // Récupérer tous les réglages actifs
     const { data: settingsList, error: settingsError } = await db
       .from('pill_settings')
@@ -72,11 +50,43 @@ async function handleCron(req: NextRequest) {
     }
 
     const results = [];
+    const now = new Date();
 
     for (const settings of settingsList) {
+      // Fuseau horaire spécifique de l'utilisatrice (défaut : Europe/Paris)
+      const userTimezone = (settings.profiles as any)?.timezone || 'Europe/Paris';
+
+      const userFormatter = new Intl.DateTimeFormat('fr-FR', {
+        timeZone: userTimezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+      });
+      const parts = userFormatter.formatToParts(now);
+      const getPart = (type: string) => parts.find((p) => p.type === type)?.value || '';
+
+      const currentYear = getPart('year');
+      const currentMonth = getPart('month');
+      const currentDay = getPart('day');
+      const todayStr = `${currentYear}-${currentMonth}-${currentDay}`;
+
+      const currentHours = Number(getPart('hour'));
+      const currentMinutes = Number(getPart('minute'));
+      const currentTotalMinutes = currentHours * 60 + currentMinutes;
+
       const [schedH, schedM] = (settings.scheduled_time || '20:00').split(':').map(Number);
       const scheduledTotalMinutes = schedH * 60 + schedM;
-      const diffMinutes = currentTotalMinutes - scheduledTotalMinutes;
+      let diffMinutes = currentTotalMinutes - scheduledTotalMinutes;
+
+      // Gestion du franchissement de minuit (ex: prévu à 23h50, cron à 00h10 -> +20 min)
+      if (diffMinutes < -720) {
+        diffMinutes += 1440;
+      } else if (diffMinutes > 720) {
+        diffMinutes -= 1440;
+      }
 
       // Vérifier si la pilule a déjà été prise aujourd'hui
       const { data: log } = await db
@@ -109,8 +119,8 @@ async function handleCron(req: NextRequest) {
         title = `⏰ PillFlow - Rappel (+30 min)`;
         body = `Avez-vous pris votre pilule ? Elle n'a pas encore été validée.`;
       }
-      // Fenêtre 3 : Alerte renforcée +1 heure (à partir de 60 minutes)
-      else if (settings.remind_after_60m && diffMinutes >= 60) {
+      // Fenêtre 3 : Alerte renforcée +1 heure (de 60 à 180 minutes après, pour éviter alertes nocturnes)
+      else if (settings.remind_after_60m && diffMinutes >= 60 && diffMinutes < 180) {
         reminderType = 'delay_60m';
         title = `⚠️ PillFlow - Alerte (+1h de retard)`;
         body = `Attention : votre pilule n'a toujours pas été confirmée. Pensez-y sans tarder !`;
@@ -121,7 +131,8 @@ async function handleCron(req: NextRequest) {
           userId: settings.user_id,
           status: 'no_reminder_window',
           diffMinutes,
-          currentTimeParis: `${currentHours}:${currentMinutes}`,
+          currentTime: `${String(currentHours).padStart(2, '0')}:${String(currentMinutes).padStart(2, '0')}`,
+          timezone: userTimezone,
         });
         continue;
       }
@@ -163,6 +174,12 @@ async function handleCron(req: NextRequest) {
                 title,
                 body,
                 tag: `pill-${reminderType}`,
+                data: {
+                  url: '/',
+                  userId: settings.user_id,
+                  reminderType,
+                  scheduledTime: settings.scheduled_time,
+                },
                 actions: [
                   { action: 'take_pill', title: "💊 J'ai pris ma pilule" },
                   { action: 'open_app', title: "Ouvrir l'application" },
@@ -196,11 +213,18 @@ async function handleCron(req: NextRequest) {
       }
     }
 
+    const defaultParisFormatter = new Intl.DateTimeFormat('fr-FR', {
+      timeZone: 'Europe/Paris',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    });
+
     return NextResponse.json({
       success: true,
       timeZone: 'Europe/Paris',
-      currentTime: `${String(currentHours).padStart(2, '0')}:${String(currentMinutes).padStart(2, '0')}`,
-      date: todayStr,
+      currentTime: defaultParisFormatter.format(now),
+      timestamp: now.toISOString(),
       processed: results.length,
       results,
     });
