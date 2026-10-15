@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #fff5f6;
   --foreground: #0f172a;
+  color-scheme: light dark;
 }
 
 @theme inline {
@@ -20,7 +21,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Fix haute visibilité pour TOUS les champs de saisie sur mobile (iOS Safari & Android) */
+/* ==========================================================================
+   STYLES PAR DÉFAUT (MODE CLAIR) - HAUTE LISIBILITÉ
+   ========================================================================== */
 input,
 textarea,
 select {
@@ -49,10 +52,103 @@ select:focus {
   border-color: #f43f5e !important;
 }
 
-/* Heure de prise bien contrastée */
 input[type="time"] {
   color: #e11d48 !important;
   -webkit-text-fill-color: #e11d48 !important;
   font-weight: 800 !important;
 }
 
+/* ==========================================================================
+   ADAPTATION AUTOMATIQUE AU THÈME SOMBRE DE L'APPAREIL (MOBILE & PC)
+   ========================================================================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b0f19;
+    --foreground: #f8fafc;
+  }
+
+  body {
+    background-color: #0b0f19 !important;
+    color: #f8fafc !important;
+  }
+
+  /* Cartes et conteneurs blancs transformés en mode sombre élégant */
+  .bg-white {
+    background-color: #131b2e !important;
+    color: #f8fafc !important;
+    border-color: #243048 !important;
+  }
+
+  /* Blocs doux / secondaires */
+  .bg-slate-50,
+  .bg-slate-100,
+  .bg-rose-50,
+  .bg-rose-50\/40,
+  .bg-rose-50\/50,
+  .bg-rose-50\/60,
+  .bg-pink-50 {
+    background-color: #182238 !important;
+    border-color: #273652 !important;
+  }
+
+  /* Bordures subtiles et bien visibles */
+  .border-slate-100,
+  .border-slate-200,
+  .border-slate-300,
+  .border-rose-100,
+  .border-rose-200 {
+    border-color: #2a3b5c !important;
+  }
+
+  /* Textes foncés transformés en textes clairs très contrastés */
+  .text-slate-800,
+  .text-slate-900,
+  .text-slate-700 {
+    color: #f8fafc !important;
+  }
+
+  .text-slate-600,
+  .text-slate-500 {
+    color: #cbd5e1 !important;
+  }
+
+  .text-slate-400 {
+    color: #94a3b8 !important;
+  }
+
+  /* Champs de saisie en mode sombre : fond sombre contrasté, texte blanc pur */
+  input,
+  textarea,
+  select {
+    background-color: #182238 !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    border-color: #384c70 !important;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #8395b2 !important;
+    -webkit-text-fill-color: #8395b2 !important;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    background-color: #1e2b45 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    border-color: #f43f5e !important;
+  }
+
+  input[type="time"] {
+    background-color: #182238 !important;
+    color: #fda4af !important;
+    -webkit-text-fill-color: #fda4af !important;
+  }
+
+  /* Fond des tiroirs et menus déroulants */
+  .bg-slate-900\/60 {
+    background-color: rgba(0, 0, 0, 0.8) !important;
+  }
+}
