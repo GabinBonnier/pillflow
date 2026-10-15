@@ -31,8 +31,35 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className="h-full antialiased">
-      <body className="min-h-full bg-slate-50 text-slate-900 font-sans selection:bg-rose-100 selection:text-rose-700">
+    <html lang="fr" className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  function updateTheme() {
+                    var theme = localStorage.getItem('pillflow_theme');
+                    var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (theme === 'dark' || (!theme && systemDark)) {
+                      document.documentElement.classList.add('dark');
+                    } else {
+                      document.documentElement.classList.remove('dark');
+                    }
+                  }
+                  updateTheme();
+                  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+                    if (!localStorage.getItem('pillflow_theme')) {
+                      updateTheme();
+                    }
+                  });
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-rose-100 selection:text-rose-700 transition-colors duration-150">
         {children}
       </body>
     </html>

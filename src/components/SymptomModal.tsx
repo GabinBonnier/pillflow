@@ -93,7 +93,7 @@ export const SymptomModal: React.FC<SymptomModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl dark:shadow-none border border-slate-100 dark:border-slate-800 overflow-hidden max-h-[90vh] flex flex-col transition-colors">
         {/* En-tête */}
         <div className="bg-gradient-to-r from-pink-500 to-rose-500 px-6 py-5 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export const SymptomModal: React.FC<SymptomModalProps> = ({
         <div className="p-6 overflow-y-auto space-y-6">
           {/* Humeur */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide mb-2">
               Humeur & Moral
             </label>
             <div className="grid grid-cols-6 gap-1.5">
@@ -128,12 +128,12 @@ export const SymptomModal: React.FC<SymptomModalProps> = ({
                   onClick={() => setMood(m.id)}
                   className={`flex flex-col items-center justify-center p-2 rounded-xl border transition cursor-pointer ${
                     mood === m.id
-                      ? 'border-rose-500 bg-rose-50 shadow-xs ring-1 ring-rose-300'
-                      : 'border-slate-100 hover:border-slate-200 bg-slate-50/50'
+                      ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/40 shadow-xs ring-1 ring-rose-300 dark:ring-rose-800'
+                      : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-800/60'
                   }`}
                 >
                   <span className="text-2xl mb-1">{m.emoji}</span>
-                  <span className="text-[10px] font-medium text-slate-600 truncate w-full text-center">
+                  <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300 truncate w-full text-center">
                     {m.label}
                   </span>
                 </button>
@@ -143,7 +143,7 @@ export const SymptomModal: React.FC<SymptomModalProps> = ({
 
           {/* Saignements / Pertes */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide mb-2 flex items-center gap-1.5">
               <Droplets className="w-3.5 h-3.5 text-rose-500" />
               Saignements / Règles
             </label>
@@ -153,8 +153,8 @@ export const SymptomModal: React.FC<SymptomModalProps> = ({
                   key={b.id}
                   type="button"
                   onClick={() => setBleeding(b.id)}
-                  className={`p-2.5 rounded-xl border text-left text-xs font-medium transition cursor-pointer ${b.color} ${
-                    bleeding === b.id ? 'ring-2 ring-rose-400 font-bold' : ''
+                  className={`p-2.5 rounded-xl border text-left text-xs font-medium transition cursor-pointer dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 ${b.color} ${
+                    bleeding === b.id ? 'ring-2 ring-rose-400 font-bold dark:ring-rose-500' : ''
                   }`}
                 >
                   {b.label}
@@ -165,7 +165,7 @@ export const SymptomModal: React.FC<SymptomModalProps> = ({
 
           {/* Symptômes physiques */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide mb-2">
               Effets indésirables & Symptômes physiques
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -178,15 +178,15 @@ export const SymptomModal: React.FC<SymptomModalProps> = ({
                     onClick={() => toggleSymptom(item.id)}
                     className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs text-left transition cursor-pointer ${
                       checked
-                        ? 'border-rose-400 bg-rose-50 text-rose-900 font-semibold'
-                        : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                        ? 'border-rose-400 bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 font-semibold'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 bg-slate-50/50 dark:bg-slate-800/50'
                     }`}
                   >
                     <div
                       className={`w-4 h-4 rounded-md flex items-center justify-center border shrink-0 ${
                         checked
                           ? 'bg-rose-500 border-rose-500 text-white'
-                          : 'border-slate-300 bg-white'
+                          : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
                       }`}
                     >
                       {checked && <Check className="w-3 h-3 stroke-[3]" />}
@@ -200,7 +200,7 @@ export const SymptomModal: React.FC<SymptomModalProps> = ({
 
           {/* Notes libres */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide mb-2 flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5 text-slate-400" />
               Notes personnelles
             </label>
@@ -209,16 +209,16 @@ export const SymptomModal: React.FC<SymptomModalProps> = ({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Ex: Pris au réveil avec de l’eau, fatigue passagère..."
               rows={3}
-              className="w-full p-3 rounded-xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
+              className="w-full p-3 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-200 dark:focus:ring-rose-800"
             />
           </div>
         </div>
 
         {/* Pied de page */}
-        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+        <div className="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs text-slate-600 hover:text-slate-800 transition cursor-pointer"
+            className="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition cursor-pointer"
           >
             Annuler
           </button>

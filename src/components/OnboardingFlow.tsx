@@ -322,13 +322,13 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-pink-50 flex flex-col justify-between py-6 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-pink-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-100 flex flex-col justify-between py-6 px-4 transition-colors">
       {/* Barre supérieure : Progression & Bouton de connexion */}
       <div className="max-w-xl w-full mx-auto">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="text-2xl">💊</span>
-            <span className="font-extrabold text-lg text-slate-800 tracking-tight">PillFlow</span>
+            <span className="font-extrabold text-lg text-slate-800 dark:text-slate-100 tracking-tight">PillFlow</span>
           </div>
 
           <button
@@ -336,7 +336,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
               setIsLoginMode(!isLoginMode);
               setErrorMessage(null);
             }}
-            className="text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-full transition cursor-pointer"
+            className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-slate-700 border border-rose-100 dark:border-slate-700 px-3 py-1.5 rounded-full transition cursor-pointer"
           >
             {isLoginMode ? '← Faire le questionnaire' : 'Déjà un compte ? Se connecter'}
           </button>
@@ -344,7 +344,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
 
         {/* Barre de progression (style Duolingo / Fitness apps) */}
         {!isLoginMode && (
-          <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-6">
+          <div className="w-full bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden mb-6">
             <div
               className="bg-gradient-to-r from-rose-500 to-pink-500 h-full transition-all duration-300 rounded-full"
               style={{ width: `${progressPercent}%` }}
@@ -365,7 +365,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
 
         {/* Message d'erreur éventuel */}
         {errorMessage && (
-          <div className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 animate-in fade-in">
+          <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-red-700 dark:text-red-300 text-xs flex items-center gap-2 animate-in fade-in">
             <span>⚠️</span>
             <span>{errorMessage}</span>
           </div>
@@ -373,15 +373,15 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
 
         {/* Mode Connexion pour utilisateur existant */}
         {isLoginMode ? (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-rose-100 animate-in fade-in">
-            <h2 className="text-xl font-bold text-slate-800 mb-1">Bon retour parmi nous !</h2>
-            <p className="text-xs text-slate-500 mb-6">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-none border border-rose-100 dark:border-slate-800 animate-in fade-in">
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-1">Bon retour parmi nous !</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">
               Connectez-vous pour synchroniser votre pilule et vos rappels.
             </p>
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                   Adresse email
                 </label>
                 <div className="relative">
@@ -392,13 +392,13 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="ton-email@exemple.com"
                     required
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-base font-medium focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none shadow-xs"
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base font-medium focus:border-rose-500 focus:ring-2 focus:ring-rose-200 dark:focus:ring-rose-800 focus:outline-none shadow-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                   Mot de passe
                 </label>
                 <div className="relative">
@@ -409,7 +409,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-base font-medium focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none shadow-xs"
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base font-medium focus:border-rose-500 focus:ring-2 focus:ring-rose-200 dark:focus:ring-rose-800 focus:outline-none shadow-xs"
                   />
                 </div>
               </div>
@@ -417,7 +417,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-sm shadow-lg shadow-rose-200 transition disabled:opacity-50 cursor-pointer"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-sm shadow-lg shadow-rose-200 dark:shadow-none transition disabled:opacity-50 cursor-pointer"
               >
                 {loading ? 'Connexion en cours...' : 'Me connecter à mon compte'}
               </button>
@@ -425,12 +425,12 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
           </div>
         ) : (
           /* Questionnaire pas-à-pas */
-          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-rose-100">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-none border border-rose-100 dark:border-slate-800">
             {/* Étape 1 : Prénom */}
             {step === 1 && (
               <div className="space-y-4 animate-in fade-in">
-                <h3 className="font-bold text-lg text-slate-800">Faisons connaissance !</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">Faisons connaissance !</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Quel est ton prénom pour que Pilly puisse personnaliser ton suivi ?
                 </p>
 
@@ -441,7 +441,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Ex: Emma, Léa, Camille..."
                   onKeyDown={(e) => e.key === 'Enter' && nextStep()}
-                  className="w-full p-4 rounded-2xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-base font-semibold focus:border-rose-500 focus:ring-2 focus:ring-rose-100 focus:outline-none shadow-xs"
+                  className="w-full p-4 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base font-semibold focus:border-rose-500 focus:ring-2 focus:ring-rose-100 dark:focus:ring-rose-800 focus:outline-none shadow-xs"
                 />
               </div>
             )}
@@ -449,7 +449,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
             {/* Étape 2 : Nom de la pilule */}
             {step === 2 && (
               <div className="space-y-4 animate-in fade-in">
-                <h3 className="font-bold text-lg text-slate-800">Quelle pilule prends-tu ?</h3>
+                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">Quelle pilule prends-tu ?</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {POPULAR_PILLS.map((p) => {
                     const isSelected = pillName === p.name;
@@ -463,12 +463,12 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                         }}
                         className={`p-3.5 rounded-2xl border-2 text-left transition cursor-pointer ${
                           isSelected
-                            ? 'border-rose-500 bg-rose-50/60 ring-1 ring-rose-200'
-                            : 'border-slate-100 hover:border-slate-300 bg-slate-50/50'
+                            ? 'border-rose-500 bg-rose-50/60 dark:bg-rose-950/40 ring-1 ring-rose-200 dark:ring-rose-800'
+                            : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-800/60'
                         }`}
                       >
-                        <div className="font-bold text-sm text-slate-800">{p.name}</div>
-                        <div className="text-[11px] text-slate-500 mt-0.5">{p.desc}</div>
+                        <div className="font-bold text-sm text-slate-800 dark:text-slate-100">{p.name}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{p.desc}</div>
                       </button>
                     );
                   })}
@@ -479,8 +479,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
             {/* Étape 3 : Heure de prise */}
             {step === 3 && (
               <div className="space-y-4 animate-in fade-in">
-                <h3 className="font-bold text-lg text-slate-800">À quelle heure est ton rituel ?</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">À quelle heure est ton rituel ?</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Choisis un moment fixe où tu as toujours ton sac ou ton verre d'eau sous la main.
                 </p>
 
@@ -489,7 +489,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                     type="time"
                     value={scheduledTime}
                     onChange={(e) => setScheduledTime(e.target.value)}
-                    className="p-4 rounded-2xl border-2 border-rose-400 bg-white text-2xl font-extrabold text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 shadow-sm"
+                    className="p-4 rounded-2xl border-2 border-rose-400 dark:border-rose-500 bg-white dark:bg-slate-800 text-2xl font-extrabold text-rose-600 dark:text-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:focus:ring-rose-800 shadow-sm"
                   />
                 </div>
 
@@ -504,8 +504,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                           onClick={() => setScheduledTime(time)}
                           className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
                             scheduledTime === time
-                              ? 'border-rose-400 bg-rose-100/50 text-rose-800 font-bold'
-                              : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                              ? 'border-rose-400 bg-rose-100/50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold'
+                              : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 bg-slate-50/50 dark:bg-slate-800/50'
                           }`}
                         >
                           {preset}
@@ -520,7 +520,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
             {/* Étape 4 : Format de la plaquette */}
             {step === 4 && (
               <div className="space-y-4 animate-in fade-in">
-                <h3 className="font-bold text-lg text-slate-800">Format de ta plaquette</h3>
+                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">Format de ta plaquette</h3>
                 <div className="space-y-2.5">
                   {PACK_TYPES.map((pack) => {
                     const isSelected = packType === pack.id;
@@ -535,14 +535,14 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                         }}
                         className={`w-full p-4 rounded-2xl border-2 text-left flex items-start gap-3 transition cursor-pointer ${
                           isSelected
-                            ? 'border-rose-500 bg-rose-50/60 ring-1 ring-rose-200'
-                            : 'border-slate-100 hover:border-slate-300 bg-slate-50/50'
+                            ? 'border-rose-500 bg-rose-50/60 dark:bg-rose-950/40 ring-1 ring-rose-200 dark:ring-rose-800'
+                            : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-800/60'
                         }`}
                       >
                         <span className="text-2xl mt-0.5">{pack.emoji}</span>
                         <div>
-                          <div className="font-bold text-sm text-slate-800">{pack.label}</div>
-                          <div className="text-xs text-slate-500 mt-0.5">{pack.desc}</div>
+                          <div className="font-bold text-sm text-slate-800 dark:text-slate-100">{pack.label}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{pack.desc}</div>
                         </div>
                       </button>
                     );
@@ -551,29 +551,29 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
               </div>
             )}
 
-            {/* Étape 5 (NOUVEAU) : Où en es-tu dans ta plaquette aujourd'hui ? */}
+            {/* Étape 5 : Où en es-tu dans ta plaquette aujourd'hui ? */}
             {step === 5 && (
               <div className="space-y-5 animate-in fade-in">
                 <div>
-                  <h3 className="font-bold text-lg text-slate-800">
+                  <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
                     Où en es-tu aujourd'hui ?
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Sélectionne le numéro du comprimé correspondant à aujourd'hui pour positionner ta plaquette avec précision.
                   </p>
                 </div>
 
                 {!inBreakPeriod ? (
                   <div>
-                    <div className="flex items-center justify-between mb-3 bg-rose-50 p-3 rounded-2xl border border-rose-100">
-                      <span className="text-xs font-semibold text-slate-700">Comprimé sélectionné :</span>
-                      <span className="text-base font-extrabold text-rose-600 bg-white px-3 py-1 rounded-xl shadow-xs">
+                    <div className="flex items-center justify-between mb-3 bg-rose-50 dark:bg-slate-800/80 p-3 rounded-2xl border border-rose-100 dark:border-slate-700">
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Comprimé sélectionné :</span>
+                      <span className="text-base font-extrabold text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-900 px-3 py-1 rounded-xl shadow-xs">
                         Comprimé n°{currentPillNumber} / {selectedPack.activeDays}
                       </span>
                     </div>
 
                     {/* Grille tactile des numéros de comprimés */}
-                    <div className="grid grid-cols-7 gap-1.5 sm:gap-2 max-h-48 overflow-y-auto p-1 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="grid grid-cols-7 gap-1.5 sm:gap-2 max-h-48 overflow-y-auto p-1 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-700">
                       {Array.from({ length: selectedPack.activeDays }, (_, i) => i + 1).map((num) => {
                         const isSelected = currentPillNumber === num;
                         return (
@@ -584,7 +584,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                             className={`h-9 sm:h-10 rounded-xl text-xs font-bold transition flex items-center justify-center cursor-pointer ${
                               isSelected
                                 ? 'bg-gradient-to-tr from-rose-500 to-pink-500 text-white shadow-md scale-105'
-                                : 'bg-white hover:bg-rose-50 text-slate-700 border border-slate-200'
+                                : 'bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
                             }`}
                           >
                             {num}
@@ -598,7 +598,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                         <button
                           type="button"
                           onClick={() => setInBreakPeriod(true)}
-                          className="text-xs text-rose-600 hover:text-rose-800 underline font-medium cursor-pointer"
+                          className="text-xs text-rose-600 dark:text-rose-400 hover:text-rose-800 underline font-medium cursor-pointer"
                         >
                           ☕ Je suis actuellement dans ma semaine de pause
                         </button>
@@ -606,15 +606,15 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                     )}
                   </div>
                 ) : (
-                  <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  <div className="space-y-3 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
                         Jour de pause en cours :
                       </span>
                       <button
                         type="button"
                         onClick={() => setInBreakPeriod(false)}
-                        className="text-xs text-rose-600 underline font-medium cursor-pointer"
+                        className="text-xs text-rose-600 dark:text-rose-400 underline font-medium cursor-pointer"
                       >
                         Revenir aux comprimés actifs
                       </button>
@@ -628,8 +628,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                           onClick={() => setBreakDayNumber(d)}
                           className={`p-2.5 rounded-xl text-center text-xs font-bold transition cursor-pointer ${
                             breakDayNumber === d
-                              ? 'bg-slate-800 text-white'
-                              : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
+                              ? 'bg-slate-800 dark:bg-rose-600 text-white'
+                              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                           }`}
                         >
                           Jour {d}
@@ -641,8 +641,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
 
                 {/* Question : As-tu déjà pris le comprimé aujourd'hui ? */}
                 {!inBreakPeriod && (
-                  <div className="pt-4 border-t border-slate-100">
-                    <label className="block text-xs font-bold text-slate-700 mb-2">
+                  <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-2">
                       As-tu déjà pris ton comprimé d'aujourd'hui ?
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -651,8 +651,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                         onClick={() => setAlreadyTakenToday(true)}
                         className={`p-3 rounded-2xl border-2 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
                           alreadyTakenToday
-                            ? 'border-emerald-500 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200'
-                            : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-800'
+                            : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 bg-slate-50/50 dark:bg-slate-800/50'
                         }`}
                       >
                         <Check className="w-4 h-4 text-emerald-600" />
@@ -664,8 +664,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                         onClick={() => setAlreadyTakenToday(false)}
                         className={`p-3 rounded-2xl border-2 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
                           !alreadyTakenToday
-                            ? 'border-rose-500 bg-rose-50 text-rose-800 ring-1 ring-rose-200'
-                            : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                            ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 ring-1 ring-rose-200 dark:ring-rose-800'
+                            : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 bg-slate-50/50 dark:bg-slate-800/50'
                         }`}
                       >
                         <Clock className="w-4 h-4 text-rose-500" />
@@ -680,51 +680,51 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
             {/* Étape 6 : Rappels échelonnés (+30min et +1h) */}
             {step === 6 && (
               <div className="space-y-4 animate-in fade-in">
-                <h3 className="font-bold text-lg text-slate-800">
+                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
                   La sécurité des 3 rappels intelligents
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Si tu n'as pas validé ta prise, Pilly relance automatiquement :
                 </p>
 
-                <div className="space-y-3 bg-rose-50/60 p-4 rounded-2xl border border-rose-100">
+                <div className="space-y-3 bg-rose-50/60 dark:bg-slate-800/80 p-4 rounded-2xl border border-rose-100 dark:border-slate-700">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-xs shrink-0">
                       1
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-slate-800">
+                      <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
                         À l'heure exacte ({scheduledTime})
                       </div>
-                      <div className="text-[11px] text-slate-500">
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
                         Notification push douce pour ne pas oublier
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 pt-2 border-t border-rose-100">
+                  <div className="flex items-center gap-3 pt-2 border-t border-rose-100 dark:border-slate-700">
                     <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs shrink-0">
                       2
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-slate-800">
+                      <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
                         Rappel à +30 min (si non validé)
                       </div>
-                      <div className="text-[11px] text-slate-500">
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
                         Pour rattraper la prise avant de sortir de la fenêtre
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 pt-2 border-t border-rose-100">
+                  <div className="flex items-center gap-3 pt-2 border-t border-rose-100 dark:border-slate-700">
                     <div className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center font-bold text-xs shrink-0">
                       3
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-slate-800">
+                      <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
                         Alerte à +1 heure (si toujours en attente)
                       </div>
-                      <div className="text-[11px] text-slate-500">
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
                         Dernier rappel avec bouton direct « J'ai pris ma pilule »
                       </div>
                     </div>
@@ -733,21 +733,21 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
               </div>
             )}
 
-            {/* Étape 7 : Animation de calcul personnalisé (Style sport app) */}
+            {/* Étape 7 : Animation de calcul personnalisé */}
             {step === 7 && (
               <div className="text-center py-8 space-y-6 animate-in zoom-in-95">
-                <h3 className="font-bold text-lg text-slate-800">
+                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
                   Génération de ton rituel personnalisé...
                 </h3>
 
-                <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                <div className="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
                   <div
                     className="bg-gradient-to-r from-rose-500 via-pink-500 to-emerald-500 h-full transition-all duration-300"
                     style={{ width: `${calculationProgress}%` }}
                   />
                 </div>
 
-                <div className="space-y-2 text-xs text-left max-w-xs mx-auto text-slate-600">
+                <div className="space-y-2 text-xs text-left max-w-xs mx-auto text-slate-600 dark:text-slate-300">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                     <span>Position : {inBreakPeriod ? `Pause (Jour ${breakDayNumber})` : `Comprimé n°${currentPillNumber}`}</span>
@@ -771,16 +771,16 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                   <span className="text-xs font-bold uppercase tracking-wider text-rose-500">
                     Dernière étape
                   </span>
-                  <h3 className="text-xl font-bold text-slate-800">
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
                     Crée ton compte pour débloquer l'accès
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Retrouve exactement ton suivi sur ton ordinateur et ton téléphone.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Adresse email
                   </label>
                   <div className="relative">
@@ -791,13 +791,13 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="ton-email@exemple.com"
                       required
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-base font-medium focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none shadow-xs"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base font-medium focus:border-rose-500 focus:ring-2 focus:ring-rose-200 dark:focus:ring-rose-800 focus:outline-none shadow-xs"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Mot de passe
                   </label>
                   <div className="relative">
@@ -809,7 +809,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                       placeholder="Au moins 6 caractères"
                       required
                       minLength={6}
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-base font-medium focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none shadow-xs"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base font-medium focus:border-rose-500 focus:ring-2 focus:ring-rose-200 dark:focus:ring-rose-800 focus:outline-none shadow-xs"
                     />
                   </div>
                 </div>
@@ -817,7 +817,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-base shadow-xl shadow-rose-200 transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-base shadow-xl shadow-rose-200 dark:shadow-none transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Sparkles className="w-5 h-5 text-rose-200" />
                   <span>{loading ? 'Création de ton compte...' : 'Accéder à mon application'}</span>
@@ -827,12 +827,12 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
 
             {/* Boutons Suivant / Retour du Quiz */}
             {step < 7 && (
-              <div className="flex items-center justify-between pt-6 border-t border-slate-100 mt-6">
+              <div className="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-slate-800 mt-6">
                 {step > 1 ? (
                   <button
                     type="button"
                     onClick={prevStep}
-                    className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-800 transition cursor-pointer"
+                    className="flex items-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition cursor-pointer"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     <span>Précédent</span>
@@ -844,7 +844,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-sm shadow-md shadow-rose-200 transition cursor-pointer"
+                  className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-sm shadow-md shadow-rose-200 dark:shadow-none transition cursor-pointer"
                 >
                   <span>Continuer</span>
                   <ArrowRight className="w-4 h-4" />
@@ -856,7 +856,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
       </div>
 
       {/* Pied de page discret */}
-      <div className="text-center text-[11px] text-slate-400 max-w-sm mx-auto">
+      <div className="text-center text-[11px] text-slate-400 dark:text-slate-500 max-w-sm mx-auto">
         🔒 Vos données de santé sont chiffrées et protégées.
       </div>
     </div>

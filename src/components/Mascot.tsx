@@ -36,10 +36,10 @@ export const Mascot: React.FC<MascotProps> = ({
     <div className={`relative flex flex-col items-center select-none ${className}`}>
       {/* Bulle de dialogue interactive (style Duo) */}
       {bubbleText && (
-        <div className="relative mb-3 max-w-xs sm:max-w-md bg-white border-2 border-rose-200 text-slate-800 px-4 py-2.5 rounded-2xl shadow-lg shadow-rose-100/60 font-medium text-xs sm:text-sm animate-in fade-in zoom-in-95 duration-200">
+        <div className="relative mb-3 max-w-xs sm:max-w-md bg-white dark:bg-slate-800 border-2 border-rose-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 px-4 py-2.5 rounded-2xl shadow-lg shadow-rose-100/60 dark:shadow-none font-medium text-xs sm:text-sm animate-in fade-in zoom-in-95 duration-200">
           <p className="leading-snug">{bubbleText}</p>
           {/* Petite flèche pointant vers Pilly */}
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-r-2 border-b-2 border-rose-200 rotate-45 transform" />
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-800 border-r-2 border-b-2 border-rose-200 dark:border-slate-700 rotate-45 transform" />
         </div>
       )}
 

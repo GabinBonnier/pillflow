@@ -53,38 +53,38 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const weekDayLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
   return (
-    <div className="rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 p-3.5 sm:p-6 shadow-xs overflow-hidden">
+    <div className="rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-6 shadow-xs overflow-hidden">
       {/* En-tête mois + navigation */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
         <div>
-          <h3 className="font-bold text-slate-800 text-sm sm:text-base">Calendrier & Historique</h3>
-          <p className="text-[11px] sm:text-xs text-slate-400">
+          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">Calendrier & Historique</h3>
+          <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500">
             Suivi quotidien des prises et des symptômes
           </p>
         </div>
 
         <div className="flex items-center justify-between sm:justify-end gap-2">
           {/* Badge régularité */}
-          <div className="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 shrink-0">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 shrink-0">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>{punctualityRate}% ponctualité</span>
           </div>
 
           {/* Navigation mois */}
-          <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 p-0.5">
+          <div className="flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-0.5">
             <button
               onClick={prevMonth}
-              className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white transition cursor-pointer"
+              className="p-1 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 transition cursor-pointer"
               title="Mois précédent"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="px-2 sm:px-3 text-xs font-semibold text-slate-700 capitalize">
+            <span className="px-2 sm:px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 capitalize">
               {format(currentMonth, 'MMM yyyy', { locale: fr })}
             </span>
             <button
               onClick={nextMonth}
-              className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white transition cursor-pointer"
+              className="p-1 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 transition cursor-pointer"
               title="Mois suivant"
             >
               <ChevronRight className="w-4 h-4" />
@@ -97,7 +97,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       <div className="grid grid-cols-7 gap-1 sm:gap-1.5 text-center">
         {/* Noms des jours de la semaine */}
         {weekDayLabels.map((name) => (
-          <div key={name} className="text-[10px] sm:text-xs font-bold text-slate-400 py-1">
+          <div key={name} className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 py-1">
             {name}
           </div>
         ))}
@@ -122,10 +122,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               onClick={() => onSelectDate(dateStr)}
               className={`min-h-[50px] sm:min-h-[66px] p-1 rounded-lg sm:rounded-xl border flex flex-col justify-between text-left transition-all cursor-pointer ${
                 !isCurrentMonth
-                  ? 'opacity-25 border-transparent bg-slate-50/40'
+                  ? 'opacity-25 border-transparent bg-slate-50/40 dark:bg-slate-800/20'
                   : isCurrentDay
-                  ? 'border-rose-400 bg-rose-50/50 ring-1 ring-rose-300'
-                  : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50/80 bg-white'
+                  ? 'border-rose-400 dark:border-rose-500 bg-rose-50/50 dark:bg-rose-950/40 ring-1 ring-rose-300 dark:ring-rose-500/50'
+                  : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-800/80 bg-white dark:bg-slate-800/60'
               }`}
             >
               <div className="flex items-center justify-between w-full">
@@ -134,8 +134,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     isCurrentDay
                       ? 'w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px]'
                       : isCurrentMonth
-                      ? 'text-slate-700'
-                      : 'text-slate-400'
+                      ? 'text-slate-700 dark:text-slate-200'
+                      : 'text-slate-400 dark:text-slate-500'
                   }`}
                 >
                   {format(day, 'd')}
@@ -172,7 +172,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       </div>
 
       {/* Légende du calendrier */}
-      <div className="flex flex-wrap items-center justify-center gap-3 text-[10px] sm:text-xs text-slate-500 mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-100">
+      <div className="flex flex-wrap items-center justify-center gap-3 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-100 dark:border-slate-800">
         <span className="flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-emerald-500" /> Pris
         </span>

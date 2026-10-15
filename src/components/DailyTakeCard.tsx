@@ -74,27 +74,27 @@ export const DailyTakeCard: React.FC<DailyTakeCardProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white border border-rose-100 shadow-lg sm:shadow-xl shadow-rose-100/50 p-4 sm:p-6 md:p-8">
+    <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-rose-100 dark:border-slate-800 shadow-lg sm:shadow-xl shadow-rose-100/50 dark:shadow-none p-4 sm:p-6 md:p-8">
       {/* Fond décoratif doux */}
-      <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-gradient-to-br from-rose-100/60 to-pink-50/20 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-gradient-to-br from-rose-100/60 to-pink-50/20 dark:from-rose-950/20 dark:to-pink-950/10 rounded-full blur-2xl pointer-events-none" />
 
       {/* En-tête de la carte */}
-      <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-slate-100">
+      <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-slate-100 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-rose-500">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-rose-500 dark:text-rose-400">
               {dateLabel}
             </span>
             {currentParisTime && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-mono">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-mono">
                 {currentParisTime} (FR)
               </span>
             )}
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">
             {isBreakPeriod ? 'Période de pause' : `Comprimé n°${currentDayInCycle}`}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
             {settings.pill_name} •{' '}
             {isBreakPeriod
               ? `Jour ${currentDayInCycle - settings.pack_active_days} sur ${settings.pack_break_days} de pause`
@@ -105,18 +105,18 @@ export const DailyTakeCard: React.FC<DailyTakeCardProps> = ({
         {/* Badge d'état */}
         <div className="self-start sm:self-auto shrink-0">
           {isBreakPeriod ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-xs font-medium">
-              <Coffee className="w-3.5 h-3.5 text-slate-500" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium">
+              <Coffee className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
               Semaine de pause
             </span>
           ) : isTodayTaken ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 text-xs font-semibold">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               Validée aujourd'hui
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">
-              <Clock className="w-3.5 h-3.5 text-rose-500" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60 text-xs font-semibold">
+              <Clock className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" />
               Prévue à {settings.scheduled_time}
             </span>
           )}
@@ -127,22 +127,22 @@ export const DailyTakeCard: React.FC<DailyTakeCardProps> = ({
       <div className="relative my-6 sm:my-8 flex flex-col items-center text-center">
         {isBreakPeriod ? (
           <div className="py-4 px-2 max-w-md">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-3xl bg-slate-100 flex items-center justify-center text-2xl sm:text-3xl mb-3 sm:mb-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl sm:text-3xl mb-3 sm:mb-4">
               ☕
             </div>
-            <h3 className="font-semibold text-slate-800 text-base sm:text-lg">Profitez de votre pause</h3>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-base sm:text-lg">Profitez de votre pause</h3>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
               Vous êtes actuellement dans vos {settings.pack_break_days} jours de pause (ou placebos).
               Les rappels reprendront automatiquement au début de la nouvelle plaquette.
             </p>
           </div>
         ) : isTodayTaken ? (
           <div className="py-2 sm:py-4">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-200 mb-3 sm:mb-4 animate-in zoom-in-90 duration-300">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none mb-3 sm:mb-4 animate-in zoom-in-90 duration-300">
               <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <h3 className="text-lg sm:text-xl font-bold text-slate-800">C'est fait pour aujourd'hui !</h3>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100">C'est fait pour aujourd'hui !</h3>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
               Prise enregistrée
               {todayLog?.taken_at
                 ? ` à ${format(new Date(todayLog.taken_at), 'HH:mm')}`
@@ -154,7 +154,7 @@ export const DailyTakeCard: React.FC<DailyTakeCardProps> = ({
 
             <button
               onClick={onUndoTakePill}
-              className="mt-3 sm:mt-4 inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 underline transition cursor-pointer"
+              className="mt-3 sm:mt-4 inline-flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 underline transition cursor-pointer"
             >
               <Undo2 className="w-3.5 h-3.5" />
               Annuler cette prise (erreur de clic)
@@ -164,13 +164,13 @@ export const DailyTakeCard: React.FC<DailyTakeCardProps> = ({
           <div className="w-full max-w-sm flex flex-col items-center">
             <button
               onClick={handleTakePillWithConfetti}
-              className="group relative w-full py-4 sm:py-5 px-6 sm:px-8 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-base sm:text-lg shadow-lg shadow-rose-300/60 hover:shadow-xl hover:shadow-rose-300 transition-all transform active:scale-98 flex items-center justify-center gap-2.5 sm:gap-3 cursor-pointer"
+              className="group relative w-full py-4 sm:py-5 px-6 sm:px-8 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-base sm:text-lg shadow-lg shadow-rose-300/60 dark:shadow-none hover:shadow-xl hover:shadow-rose-300 transition-all transform active:scale-98 flex items-center justify-center gap-2.5 sm:gap-3 cursor-pointer"
             >
               <span className="text-xl sm:text-2xl transition group-hover:rotate-12">💊</span>
               <span>J'ai pris ma pilule</span>
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-rose-200 animate-pulse" />
             </button>
-            <p className="text-[11px] sm:text-xs text-slate-400 mt-2">
+            <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 mt-2">
               Un clic pour enregistrer et stopper les rappels de la journée
             </p>
           </div>
@@ -178,43 +178,43 @@ export const DailyTakeCard: React.FC<DailyTakeCardProps> = ({
       </div>
 
       {/* Frise des rappels programmés (H, +30min, +1h) - 100% Adaptée mobile */}
-      <div className="relative mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-slate-100">
+      <div className="relative mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-slate-100 dark:border-slate-800">
         <div className="flex items-center justify-between mb-2.5 sm:mb-3">
-          <span className="text-[11px] sm:text-xs font-semibold text-slate-700 uppercase tracking-wide">
+          <span className="text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
             Vos 3 rappels programmés
           </span>
-          <span className="text-[10px] sm:text-[11px] text-slate-400">
+          <span className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500">
             {settings.reminders_enabled ? 'Actifs' : 'En pause'}
           </span>
         </div>
 
         <div className="grid grid-cols-3 gap-1.5 sm:gap-3 text-center">
           {/* Étape 1 : Heure H */}
-          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-100 flex flex-col justify-between">
-            <div className="text-[10px] sm:text-xs font-semibold text-slate-700 truncate">1. Heure H</div>
-            <div className="font-mono text-xs sm:text-sm font-extrabold text-rose-600 my-0.5">{timeInitial}</div>
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80 flex flex-col justify-between">
+            <div className="text-[10px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">1. Heure H</div>
+            <div className="font-mono text-xs sm:text-sm font-extrabold text-rose-600 dark:text-rose-400 my-0.5">{timeInitial}</div>
             <p className="text-[9px] sm:text-[10px] text-slate-400 truncate">Normale</p>
           </div>
 
           {/* Étape 2 : +30 min */}
-          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-amber-50/60 border border-amber-100 flex flex-col justify-between">
-            <div className="text-[10px] sm:text-xs font-semibold text-amber-800 truncate">2. +30 min</div>
-            <div className="font-mono text-xs sm:text-sm font-extrabold text-amber-600 my-0.5">{time30m}</div>
-            <p className="text-[9px] sm:text-[10px] text-amber-600/80 truncate">Rappel 1</p>
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-amber-50/60 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/50 flex flex-col justify-between">
+            <div className="text-[10px] sm:text-xs font-semibold text-amber-800 dark:text-amber-300 truncate">2. +30 min</div>
+            <div className="font-mono text-xs sm:text-sm font-extrabold text-amber-600 dark:text-amber-400 my-0.5">{time30m}</div>
+            <p className="text-[9px] sm:text-[10px] text-amber-600/80 dark:text-amber-400/80 truncate">Rappel 1</p>
           </div>
 
           {/* Étape 3 : +1h */}
-          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-rose-50/60 border border-rose-100 flex flex-col justify-between">
-            <div className="text-[10px] sm:text-xs font-semibold text-rose-800 truncate">3. +1 heure</div>
-            <div className="font-mono text-xs sm:text-sm font-extrabold text-red-600 my-0.5">{time60m}</div>
-            <p className="text-[9px] sm:text-[10px] text-red-600/80 truncate">Alerte</p>
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-rose-50/60 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 flex flex-col justify-between">
+            <div className="text-[10px] sm:text-xs font-semibold text-rose-800 dark:text-rose-300 truncate">3. +1 heure</div>
+            <div className="font-mono text-xs sm:text-sm font-extrabold text-red-600 dark:text-rose-400 my-0.5">{time60m}</div>
+            <p className="text-[9px] sm:text-[10px] text-red-600/80 dark:text-rose-400/80 truncate">Alerte</p>
           </div>
         </div>
       </div>
 
       {/* Raccourci vers les symptômes du jour */}
-      <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-50 flex items-center justify-between text-[11px] sm:text-xs">
-        <div className="flex items-center gap-1.5 text-slate-500 truncate">
+      <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] sm:text-xs">
+        <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 truncate">
           <HeartHandshake className="w-3.5 h-3.5 text-rose-400 shrink-0" />
           <span className="truncate">
             {todaySymptoms?.symptoms && todaySymptoms.symptoms.length > 0
@@ -224,7 +224,7 @@ export const DailyTakeCard: React.FC<DailyTakeCardProps> = ({
         </div>
         <button
           onClick={onOpenSymptoms}
-          className="text-rose-600 font-medium hover:text-rose-700 hover:underline shrink-0 ml-2 cursor-pointer"
+          className="text-rose-600 dark:text-rose-400 font-medium hover:text-rose-700 dark:hover:text-rose-300 hover:underline shrink-0 ml-2 cursor-pointer"
         >
           {todaySymptoms?.symptoms && todaySymptoms.symptoms.length > 0
             ? 'Modifier'

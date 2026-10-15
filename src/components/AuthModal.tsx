@@ -89,7 +89,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+      <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl dark:shadow-none border border-slate-100 dark:border-slate-800 overflow-hidden transition-colors">
         {/* En-tête */}
         <div className="bg-gradient-to-r from-rose-500 to-pink-500 px-6 py-5 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -114,18 +114,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="p-6">
           {user && user.email !== 'demo@pillflow.app' ? (
             <div className="text-center py-4 space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl font-bold">
+              <div className="w-16 h-16 mx-auto rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300 flex items-center justify-center text-2xl font-bold">
                 {user.email[0].toUpperCase()}
               </div>
               <div>
-                <p className="text-xs text-slate-400">Connecté(e) en tant que</p>
-                <p className="font-bold text-slate-800 text-base">{user.email}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">Connecté(e) en tant que</p>
+                <p className="font-bold text-slate-800 dark:text-slate-100 text-base">{user.email}</p>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 space-y-2">
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
                 <button
                   onClick={handleLogout}
-                  className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer"
+                  className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                   Se déconnecter
@@ -136,7 +136,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     onClose();
                     onOpenDeleteAccount && onOpenDeleteAccount();
                   }}
-                  className="w-full py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer"
+                  className="w-full py-2.5 rounded-xl border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4 text-red-500" />
                   Supprimer mon compte définitivement
@@ -145,11 +145,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600">
+              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
                 {isLiveSupabase ? (
                   <span>🔒 Vos données sont synchronisées de manière sécurisée sur votre base de données Supabase.</span>
                 ) : (
-                  <span>💡 <strong>Mode Démo Actif :</strong> Entrez votre email pour simuler votre compte ou configurez Supabase dans <code className="bg-slate-200 px-1 py-0.5 rounded text-[11px]">.env.local</code> pour la vraie persistance cloud.</span>
+                  <span>💡 <strong>Mode Démo Actif :</strong> Entrez votre email pour simuler votre compte ou configurez Supabase dans <code className="bg-slate-200 dark:bg-slate-700 px-1 py-0.5 rounded text-[11px]">.env.local</code> pour la vraie persistance cloud.</span>
                 )}
               </div>
 
@@ -157,8 +157,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <div
                   className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
                     message.type === 'success'
-                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                      : 'bg-red-50 text-red-800 border border-red-200'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60'
+                      : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-900/60'
                   }`}
                 >
                   {message.type === 'success' ? (
@@ -171,7 +171,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Adresse email
                 </label>
                 <div className="relative">
@@ -182,13 +182,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="exemple@email.com"
                     required
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-base font-medium focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-200 shadow-xs"
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base font-medium focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-200 dark:focus:ring-rose-800 shadow-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Mot de passe
                 </label>
                 <div className="relative">
@@ -200,7 +200,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     placeholder="••••••••"
                     required
                     minLength={6}
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-base font-medium focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-200 shadow-xs"
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base font-medium focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-200 dark:focus:ring-rose-800 shadow-xs"
                   />
                 </div>
               </div>
@@ -221,7 +221,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-xs text-rose-600 hover:underline cursor-pointer"
+                  className="text-xs text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
                 >
                   {isSignUp
                     ? 'Déjà un compte ? Se connecter'
