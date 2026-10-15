@@ -11,7 +11,9 @@ import { SettingsModal } from '@/components/SettingsModal';
 import { EmergencyGuideModal } from '@/components/EmergencyGuideModal';
 import { SymptomModal } from '@/components/SymptomModal';
 import { AuthModal } from '@/components/AuthModal';
-import { Sparkles, HeartHandshake, ShieldCheck, HelpCircle } from 'lucide-react';
+import { OnboardingFlow } from '@/components/OnboardingFlow';
+import { Mascot } from '@/components/Mascot';
+import { HelpCircle, ShieldCheck } from 'lucide-react';
 
 export default function Home() {
   const store = usePillStore();
@@ -21,17 +23,34 @@ export default function Home() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [selectedDateForSymptoms, setSelectedDateForSymptoms] = useState<string | null>(null);
 
+  // État de chargement initial
   if (!store.isClient || store.isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-        <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-3xl shadow-lg shadow-rose-200 animate-pulse mb-4">
-          💊
-        </div>
-        <p className="text-slate-600 font-semibold text-sm">Chargement de PillFlow...</p>
+        <Mascot mood="happy" size="md" />
+        <p className="text-slate-600 font-semibold text-sm mt-3 animate-pulse">
+          Pilly prépare votre espace...
+        </p>
       </div>
     );
   }
 
+  // 🔒 BLOCAGE DE L'ACCÈS AU SITE TANT QU'ON N'A PAS DE COMPTE :
+  // Affiche le questionnaire interactif Duolingo / Sport app avant la création du compte
+  if (!store.user) {
+    return (
+      <OnboardingFlow
+        onComplete={(user, newSettings) => {
+          store.setUser(user);
+          if (newSettings && Object.keys(newSettings).length > 0) {
+            store.updateSettings(newSettings);
+          }
+        }}
+      />
+    );
+  }
+
+  // 🌸 ESPACE CONNECTÉ (Dashboard complet)
   return (
     <div className="min-h-screen bg-gradient-to-b from-rose-50/40 via-white to-slate-50 text-slate-800">
       {/* Barre de navigation */}
@@ -48,6 +67,37 @@ export default function Home() {
 
       {/* Contenu principal */}
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {/* Encart mascotte Pilly amicale sur le tableau de bord */}
+        <div className="rounded-3xl bg-gradient-to-r from-rose-50 via-pink-50 to-white border border-rose-200/80 p-4 sm:p-5 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Mascot
+              mood={store.isTodayTaken ? 'excited' : 'waving'}
+              size="sm"
+            />
+            <div>
+              <h3 className="font-bold text-slate-800 text-sm sm:text-base">
+                {store.isTodayTaken
+                  ? 'Bravo ! Ta pilule du jour est validée ✨'
+                  : `Coucou ! Ton comprimé est prévu à ${store.settings.scheduled_time} 🌸`}
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {store.isTodayTaken
+                  ? 'Pilly veille au grain. Passe une excellente journée sereine !'
+                  : 'N’oublie pas : je te relance à +30min et +1h si besoin.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="hidden sm:block">
+            <button
+              onClick={() => setIsEmergencyOpen(true)}
+              className="text-xs font-semibold text-rose-700 bg-white hover:bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-full transition cursor-pointer"
+            >
+              Besoin d'un conseil ?
+            </button>
+          </div>
+        </div>
+
         {/* Simulateur interactif de notifications pour tester facilement les rappels +30m et +1h */}
         <NotificationTestBar
           pushSupported={store.pushSupported}
@@ -104,7 +154,7 @@ export default function Home() {
             </button>
           </div>
           <p>
-            PillFlow est un compagnon de rappel et de santé. En cas de doute persistant ou de rapport à risque, contactez un professionnel de santé ou le Planning Familial (0 800 08 11 11).
+            PillFlow est votre compagnon de santé et de rappel. En cas de doute persistant ou de rapport à risque, contactez un professionnel de santé ou le Planning Familial (0 800 08 11 11).
           </p>
         </footer>
       </main>

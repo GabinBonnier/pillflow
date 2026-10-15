@@ -1,0 +1,680 @@
+'use client';
+
+import React, { useState } from 'react';
+import confetti from 'canvas-confetti';
+import { Mascot, MascotMood } from '@/components/Mascot';
+import { PillSettings } from '@/types';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import {
+  ArrowRight,
+  ArrowLeft,
+  CheckCircle2,
+  Lock,
+  Mail,
+  Sparkles,
+  Clock,
+  ShieldCheck,
+  Bell,
+  Heart,
+  ChevronRight,
+} from 'lucide-react';
+
+interface OnboardingFlowProps {
+  onComplete: (user: { id: string; email: string }, settings: Partial<PillSettings>) => void;
+}
+
+const POPULAR_PILLS = [
+  { name: 'Optilova 20', type: 'combined', tolerance: 12, desc: 'Combinée (12h de marge)' },
+  { name: 'Leeloo Gé', type: 'combined', tolerance: 12, desc: 'Combinée (12h de marge)' },
+  { name: 'Cerazette / Optimizette', type: 'progestin_12h', tolerance: 12, desc: 'Désogestrel (12h de marge)' },
+  { name: 'Slinda', type: 'progestin_12h', tolerance: 12, desc: 'Drospirénone (24h de marge)' },
+  { name: 'Microval', type: 'progestin_3h', tolerance: 3, desc: 'Progestative pure (3h de marge)' },
+  { name: 'Autre pilule', type: 'combined', tolerance: 12, desc: 'Personnalisée' },
+];
+
+const PACK_TYPES = [
+  {
+    id: '21_7',
+    label: '21 comprimés + 7 jours de pause',
+    activeDays: 21,
+    breakDays: 7,
+    desc: 'Le format classique le plus répandu (règles pendant la pause)',
+    emoji: '🌸',
+  },
+  {
+    id: '28_placebo',
+    label: '28 comprimés (avec placebos)',
+    activeDays: 21,
+    breakDays: 7,
+    desc: '21 comprimés actifs + 7 comprimés placebo sans pause pour garder le rythme',
+    emoji: '🤍',
+  },
+  {
+    id: 'continuous',
+    label: 'Prise en continu (365 jours)',
+    activeDays: 365,
+    breakDays: 0,
+    desc: 'Sans aucune pause ni règles d’interruption',
+    emoji: '♾️',
+  },
+];
+
+export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
+  const [step, setStep] = useState<number>(1);
+  const [isLoginMode, setIsLoginMode] = useState<boolean>(false);
+
+  // Réponses du questionnaire
+  const [firstName, setFirstName] = useState<string>('');
+  const [pillName, setPillName] = useState<string>('Optilova 20');
+  const [tolerance, setTolerance] = useState<number>(12);
+  const [scheduledTime, setScheduledTime] = useState<string>('20:00');
+  const [packType, setPackType] = useState<string>('21_7');
+  const [reminders, setReminders] = useState({
+    initial: true,
+    after30m: true,
+    after60m: true,
+  });
+
+  // Identifiants pour la création ou connexion
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // État de calcul simulé pour l'étape 6
+  const [calculationProgress, setCalculationProgress] = useState<number>(0);
+
+  const totalSteps = 7;
+  const progressPercent = Math.round((step / totalSteps) * 100);
+
+  // Choix de l'humeur de Pilly selon l'étape
+  const getPillyMood = (): MascotMood => {
+    if (isLoginMode) return 'waving';
+    switch (step) {
+      case 1:
+        return 'waving';
+      case 2:
+        return 'thinking';
+      case 3:
+        return 'thinking';
+      case 4:
+        return 'cautious';
+      case 5:
+        return 'happy';
+      case 6:
+        return 'excited';
+      case 7:
+        return 'proud';
+      default:
+        return 'happy';
+    }
+  };
+
+  const getPillySpeech = (): string => {
+    if (isLoginMode) {
+      return "Ravi de te revoir ! Connecte-toi pour retrouver ton calendrier et tes rappels ✨";
+    }
+    switch (step) {
+      case 1:
+        return "Coucou ! Moi c’est Pilly 💊 Ta coach perso pour ne plus jamais stresser avec ta pilule. Comment tu t’appelles ?";
+      case 2:
+        return `Enchantée ${firstName || 'toi'} ! Quelle pilule prends-tu au quotidien ?`;
+      case 3:
+        return "Le secret d’une protection optimale, c’est la régularité ! À quelle heure es-tu la plus tranquille ?";
+      case 4:
+        return "Chaque formule est unique ! Comment est organisée ta plaquette ?";
+      case 5:
+        return "Je veille sur toi : si tu n’as pas validé à l’heure, je t’envoie un rappel à +30min puis à +1h. Ça te convient ?";
+      case 6:
+        return "Génial ! Je calcule ton plan personnalisé et je configure tes rappels...";
+      case 7:
+        return `Tout est prêt ${firstName || ''} ! Crée ton compte pour sauvegarder ton suivi et le synchroniser sur ton téléphone et ton PC 📲`;
+      default:
+        return "C'est parti !";
+    }
+  };
+
+  // Passage à l'étape suivante
+  const nextStep = () => {
+    setErrorMessage(null);
+    if (step === 1 && !firstName.trim()) {
+      setErrorMessage('Dis-moi comment tu t’appelles pour qu’on fasse connaissance !');
+      return;
+    }
+    if (step === 5) {
+      // Étape d'animation calculatoire (comme les apps de sport)
+      setStep(6);
+      let p = 0;
+      const interval = setInterval(() => {
+        p += 25;
+        setCalculationProgress(p);
+        if (p >= 100) {
+          clearInterval(interval);
+          setTimeout(() => setStep(7), 600);
+        }
+      }, 400);
+      return;
+    }
+    setStep((prev) => Math.min(totalSteps, prev + 1));
+  };
+
+  const prevStep = () => {
+    setErrorMessage(null);
+    setStep((prev) => Math.max(1, prev - 1));
+  };
+
+  // Connexion pour utilisateur existant
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage(null);
+
+    try {
+      if (isSupabaseConfigured() && supabase) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        if (data.user) {
+          onComplete(
+            { id: data.user.id, email: data.user.email || '' },
+            {}
+          );
+        }
+      } else {
+        // Fallback local
+        const localUser = { id: `local-${Date.now()}`, email };
+        localStorage.setItem('pillflow_user', JSON.stringify(localUser));
+        onComplete(localUser, {});
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Erreur lors de la connexion. Vérifiez vos identifiants.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Création du compte à la fin du quiz
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage(null);
+
+    const selectedPack = PACK_TYPES.find((p) => p.id === packType) || PACK_TYPES[0];
+
+    const userSettings: Partial<PillSettings> = {
+      pill_name: pillName,
+      tolerance_hours: tolerance,
+      scheduled_time: scheduledTime,
+      pack_active_days: selectedPack.activeDays,
+      pack_break_days: selectedPack.breakDays,
+      reminders_enabled: true,
+      remind_at_pill_time: reminders.initial,
+      remind_after_30m: reminders.after30m,
+      remind_after_60m: reminders.after60m,
+    };
+
+    try {
+      if (isSupabaseConfigured() && supabase) {
+        // Créer l'utilisateur dans Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: firstName,
+            },
+          },
+        });
+
+        if (authError) throw authError;
+
+        const userId = authData.user?.id || 'demo-user-id';
+
+        // Enregistrer les réglages personnalisés choisis dans le questionnaire
+        await supabase.from('pill_settings').upsert({
+          user_id: userId,
+          ...userSettings,
+        });
+
+        // Confettis de bienvenue
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+        });
+
+        onComplete({ id: userId, email }, userSettings);
+      } else {
+        // Mode local
+        const localUser = { id: `local-${Date.now()}`, email };
+        localStorage.setItem('pillflow_user', JSON.stringify(localUser));
+        localStorage.setItem('pillflow_settings', JSON.stringify(userSettings));
+
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+        });
+
+        onComplete(localUser, userSettings);
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Impossible de créer le compte. Vérifiez les informations.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-pink-50 flex flex-col justify-between py-6 px-4">
+      {/* Barre supérieure : Progression & Bouton de connexion */}
+      <div className="max-w-xl w-full mx-auto">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">💊</span>
+            <span className="font-extrabold text-lg text-slate-800 tracking-tight">PillFlow</span>
+          </div>
+
+          <button
+            onClick={() => {
+              setIsLoginMode(!isLoginMode);
+              setErrorMessage(null);
+            }}
+            className="text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-full transition cursor-pointer"
+          >
+            {isLoginMode ? '← Faire le questionnaire' : 'Déjà un compte ? Se connecter'}
+          </button>
+        </div>
+
+        {/* Barre de progression (style Duolingo / Fitness apps) */}
+        {!isLoginMode && (
+          <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-6">
+            <div
+              className="bg-gradient-to-r from-rose-500 to-pink-500 h-full transition-all duration-300 rounded-full"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Contenu principal : Mascotte Pilly + Étape active */}
+      <div className="max-w-xl w-full mx-auto flex-1 flex flex-col justify-center my-4">
+        {/* Mascotte Pilly avec sa bulle de dialogue */}
+        <Mascot
+          mood={getPillyMood()}
+          size="lg"
+          bubbleText={getPillySpeech()}
+          className="mb-6"
+        />
+
+        {/* Message d'erreur éventuel */}
+        {errorMessage && (
+          <div className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 animate-in fade-in">
+            <span>⚠️</span>
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {/* Mode Connexion pour utilisateur existant */}
+        {isLoginMode ? (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-rose-100 animate-in fade-in">
+            <h2 className="text-xl font-bold text-slate-800 mb-1">Bon retour parmi nous !</h2>
+            <p className="text-xs text-slate-500 mb-6">
+              Connectez-vous pour synchroniser votre pilule et vos rappels.
+            </p>
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Adresse email
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="ton-email@exemple.com"
+                    required
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Mot de passe
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-sm shadow-lg shadow-rose-200 transition disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? 'Connexion en cours...' : 'Me connecter à mon compte'}
+              </button>
+            </form>
+          </div>
+        ) : (
+          /* Questionnaire pas-à-pas */
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-rose-100">
+            {/* Étape 1 : Prénom */}
+            {step === 1 && (
+              <div className="space-y-4 animate-in fade-in">
+                <h3 className="font-bold text-lg text-slate-800">Faisons connaissance !</h3>
+                <p className="text-xs text-slate-500">
+                  Quel est ton prénom pour que Pilly puisse personnaliser ton suivi ?
+                </p>
+
+                <input
+                  type="text"
+                  autoFocus
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Ex: Emma, Léa, Camille..."
+                  onKeyDown={(e) => e.key === 'Enter' && nextStep()}
+                  className="w-full p-4 rounded-2xl border-2 border-slate-200 text-base font-semibold focus:border-rose-400 focus:ring-2 focus:ring-rose-100 focus:outline-none"
+                />
+              </div>
+            )}
+
+            {/* Étape 2 : Nom de la pilule */}
+            {step === 2 && (
+              <div className="space-y-4 animate-in fade-in">
+                <h3 className="font-bold text-lg text-slate-800">Quelle pilule prends-tu ?</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {POPULAR_PILLS.map((p) => {
+                    const isSelected = pillName === p.name;
+                    return (
+                      <button
+                        key={p.name}
+                        type="button"
+                        onClick={() => {
+                          setPillName(p.name);
+                          setTolerance(p.tolerance);
+                        }}
+                        className={`p-3.5 rounded-2xl border-2 text-left transition cursor-pointer ${
+                          isSelected
+                            ? 'border-rose-500 bg-rose-50/60 ring-1 ring-rose-200'
+                            : 'border-slate-100 hover:border-slate-300 bg-slate-50/50'
+                        }`}
+                      >
+                        <div className="font-bold text-sm text-slate-800">{p.name}</div>
+                        <div className="text-[11px] text-slate-500 mt-0.5">{p.desc}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Étape 3 : Heure de prise */}
+            {step === 3 && (
+              <div className="space-y-4 animate-in fade-in">
+                <h3 className="font-bold text-lg text-slate-800">À quelle heure est ton rituel ?</h3>
+                <p className="text-xs text-slate-500">
+                  Choisis un moment fixe où tu as toujours ton sac ou ton verre d'eau sous la main.
+                </p>
+
+                <div className="flex justify-center py-2">
+                  <input
+                    type="time"
+                    value={scheduledTime}
+                    onChange={(e) => setScheduledTime(e.target.value)}
+                    className="p-4 rounded-2xl border-2 border-rose-300 bg-rose-50/40 text-2xl font-extrabold text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {['20:00 (Dîner)', '21:30 (Coucher)', '08:00 (Matin)', '12:30 (Déjeuner)'].map(
+                    (preset) => {
+                      const time = preset.slice(0, 5);
+                      return (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setScheduledTime(time)}
+                          className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
+                            scheduledTime === time
+                              ? 'border-rose-400 bg-rose-100/50 text-rose-800 font-bold'
+                              : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                          }`}
+                        >
+                          {preset}
+                        </button>
+                      );
+                    }
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Étape 4 : Structure de la plaquette */}
+            {step === 4 && (
+              <div className="space-y-4 animate-in fade-in">
+                <h3 className="font-bold text-lg text-slate-800">Format de ta plaquette</h3>
+                <div className="space-y-2.5">
+                  {PACK_TYPES.map((pack) => {
+                    const isSelected = packType === pack.id;
+                    return (
+                      <button
+                        key={pack.id}
+                        type="button"
+                        onClick={() => setPackType(pack.id)}
+                        className={`w-full p-4 rounded-2xl border-2 text-left flex items-start gap-3 transition cursor-pointer ${
+                          isSelected
+                            ? 'border-rose-500 bg-rose-50/60 ring-1 ring-rose-200'
+                            : 'border-slate-100 hover:border-slate-300 bg-slate-50/50'
+                        }`}
+                      >
+                        <span className="text-2xl mt-0.5">{pack.emoji}</span>
+                        <div>
+                          <div className="font-bold text-sm text-slate-800">{pack.label}</div>
+                          <div className="text-xs text-slate-500 mt-0.5">{pack.desc}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Étape 5 : Rappels échelonnés (la demande spéciale de l'utilisateur) */}
+            {step === 5 && (
+              <div className="space-y-4 animate-in fade-in">
+                <h3 className="font-bold text-lg text-slate-800">
+                  La sécurité des 3 rappels intelligents
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Si tu n'as pas validé ta prise, Pilly relance automatiquement :
+                </p>
+
+                <div className="space-y-3 bg-rose-50/60 p-4 rounded-2xl border border-rose-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                      1
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-800">
+                        À l'heure exacte ({scheduledTime})
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        Notification push douce pour ne pas oublier
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-2 border-t border-rose-100">
+                    <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                      2
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-800">
+                        Rappel à +30 min (si non validé)
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        Pour rattraper la prise avant de sortir de la fenêtre
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 pt-2 border-t border-rose-100">
+                    <div className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                      3
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-800">
+                        Alerte à +1 heure (si toujours en attente)
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        Dernier rappel avec bouton direct « J'ai pris ma pilule »
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Étape 6 : Animation de calcul personnalisé (Style sport app) */}
+            {step === 6 && (
+              <div className="text-center py-8 space-y-6 animate-in zoom-in-95">
+                <h3 className="font-bold text-lg text-slate-800">
+                  Génération de ton rituel personnalisé...
+                </h3>
+
+                <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-rose-500 via-pink-500 to-emerald-500 h-full transition-all duration-300"
+                    style={{ width: `${calculationProgress}%` }}
+                  />
+                </div>
+
+                <div className="space-y-2 text-xs text-left max-w-xs mx-auto text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Pilule sélectionnée : {pillName}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Fenêtre de sécurité : {tolerance}h calculée</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Algorithme des 3 rappels activé</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Étape 7 : Création de compte pour débloquer l'accès */}
+            {step === 7 && (
+              <form onSubmit={handleSignUp} className="space-y-4 animate-in fade-in">
+                <div className="text-center pb-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-rose-500">
+                    Dernière étape
+                  </span>
+                  <h3 className="text-xl font-bold text-slate-800">
+                    Crée ton compte pour débloquer l'accès
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Retrouve exactement ton suivi sur ton ordinateur et ton téléphone.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    Adresse email
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="ton-email@exemple.com"
+                      required
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    Mot de passe
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Au moins 6 caractères"
+                      required
+                      minLength={6}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-rose-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-base shadow-xl shadow-rose-200 transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-5 h-5 text-rose-200" />
+                  <span>{loading ? 'Création de ton compte...' : 'Accéder à mon application'}</span>
+                </button>
+              </form>
+            )}
+
+            {/* Boutons Suivant / Retour du Quiz */}
+            {step < 6 && (
+              <div className="flex items-center justify-between pt-6 border-t border-slate-100 mt-6">
+                {step > 1 ? (
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-800 transition cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Précédent</span>
+                  </button>
+                ) : (
+                  <div />
+                )}
+
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-sm shadow-md shadow-rose-200 transition cursor-pointer"
+                >
+                  <span>Continuer</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Pied de page discret */}
+      <div className="text-center text-[11px] text-slate-400 max-w-sm mx-auto">
+        🔒 Vos données de santé sont chiffrées et protégées.
+      </div>
+    </div>
+  );
+};

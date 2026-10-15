@@ -130,11 +130,14 @@ export function usePillStore() {
       }
 
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        if (parsed && parsed.email && parsed.email !== 'demo@pillflow.app') {
+          setUser(parsed);
+        } else {
+          setUser(null);
+        }
       } else {
-        const defaultUser = { id: 'demo-user-id', email: 'demo@pillflow.app' };
-        setUser(defaultUser);
-        localStorage.setItem('pillflow_user', JSON.stringify(defaultUser));
+        setUser(null);
       }
     } catch (e) {
       console.error('Erreur chargement local:', e);
@@ -146,17 +149,25 @@ export function usePillStore() {
     if (hasSupabase && supabase) {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
-          setUser({ id: session.user.id, email: session.user.email || '' });
+          const u = { id: session.user.id, email: session.user.email || '' };
+          setUser(u);
+          localStorage.setItem('pillflow_user', JSON.stringify(u));
           loadFromSupabase(session.user.id);
+        } else {
+          setUser(null);
+          localStorage.removeItem('pillflow_user');
         }
       });
 
       const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user) {
-          setUser({ id: session.user.id, email: session.user.email || '' });
+          const u = { id: session.user.id, email: session.user.email || '' };
+          setUser(u);
+          localStorage.setItem('pillflow_user', JSON.stringify(u));
           loadFromSupabase(session.user.id);
         } else {
-          setUser({ id: 'demo-user-id', email: 'demo@pillflow.app' });
+          setUser(null);
+          localStorage.removeItem('pillflow_user');
         }
       });
 
