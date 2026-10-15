@@ -93,10 +93,27 @@ export function usePillStore() {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
       setPushSupported(true);
       setPushPermission(Notification.permission);
-      navigator.serviceWorker.register('/sw.js').then((reg) => {
-        reg.pushManager.getSubscription().then((sub) => {
-          if (sub) setPushSubscription(sub);
-        });
+      navigator.serviceWorker.register('/sw.js').then(async (reg) => {
+        try {
+          const sub = await reg.pushManager.getSubscription();
+          if (sub) {
+            setPushSubscription(sub);
+            // Si un utilisateur est déjà en session locale, synchroniser tout de suite
+            const storedUser = localStorage.getItem('pillflow_user');
+            if (storedUser) {
+              const u = JSON.parse(storedUser);
+              if (u?.id) {
+                fetch('/api/webpush/subscribe', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ subscription: sub, userId: u.id }),
+                }).catch(() => {});
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Erreur push check:', e);
+        }
       }).catch(console.error);
     }
 
@@ -221,6 +238,24 @@ export function usePillStore() {
         userSymps.forEach((s) => (map[s.date] = s));
         setSymptoms(map);
         localStorage.setItem('pillflow_symptoms', JSON.stringify(map));
+      }
+
+      // Synchroniser automatiquement l'abonnement Web Push de l'appareil
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
+        try {
+          const reg = await navigator.serviceWorker.ready;
+          let sub = await reg.pushManager.getSubscription();
+          if (sub) {
+            setPushSubscription(sub);
+            await fetch('/api/webpush/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ subscription: sub, userId }),
+            });
+          }
+        } catch (subErr) {
+          console.warn('Erreur push sync:', subErr);
+        }
       }
     } catch (err) {
       console.error('Erreur chargement Supabase:', err);

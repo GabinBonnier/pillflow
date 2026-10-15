@@ -130,14 +130,14 @@ export default function Home() {
         </div>
 
         {/* Bannière activation push sur smartphone */}
-        {store.pushPermission !== 'granted' && (
+        {(!store.pushSubscription || store.pushPermission !== 'granted') && (
           <div className="rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 text-white p-3.5 sm:p-4 shadow-md flex items-center justify-between gap-3 animate-in fade-in">
             <div className="flex items-center gap-2.5">
               <span className="text-xl">🔔</span>
               <div>
                 <p className="font-bold text-xs sm:text-sm">Activez vos rappels (+30m et +1h)</p>
                 <p className="text-[11px] text-rose-100">
-                  Autorisez les notifications pour recevoir vos alertes sur votre téléphone à l'heure exacte.
+                  Enregistrez ce téléphone pour recevoir vos alertes push même quand l'application est fermée.
                 </p>
               </div>
             </div>
