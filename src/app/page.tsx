@@ -40,10 +40,13 @@ export default function Home() {
   if (!store.user) {
     return (
       <OnboardingFlow
-        onComplete={(user, newSettings) => {
+        onComplete={(user, newSettings, alreadyTakenToday) => {
           store.setUser(user);
           if (newSettings && Object.keys(newSettings).length > 0) {
             store.updateSettings(newSettings);
+          }
+          if (alreadyTakenToday) {
+            store.takePill();
           }
         }}
       />

@@ -5,6 +5,7 @@ import confetti from 'canvas-confetti';
 import { Mascot, MascotMood } from '@/components/Mascot';
 import { PillSettings } from '@/types';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { format, subDays } from 'date-fns';
 import {
   ArrowRight,
   ArrowLeft,
@@ -17,10 +18,16 @@ import {
   Bell,
   Heart,
   ChevronRight,
+  Check,
+  Coffee,
 } from 'lucide-react';
 
 interface OnboardingFlowProps {
-  onComplete: (user: { id: string; email: string }, settings: Partial<PillSettings>) => void;
+  onComplete: (
+    user: { id: string; email: string },
+    settings: Partial<PillSettings>,
+    alreadyTakenToday?: boolean
+  ) => void;
 }
 
 const POPULAR_PILLS = [
@@ -69,6 +76,13 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
   const [tolerance, setTolerance] = useState<number>(12);
   const [scheduledTime, setScheduledTime] = useState<string>('20:00');
   const [packType, setPackType] = useState<string>('21_7');
+
+  // NOUVEAU : Position exacte dans la plaquette actuelle
+  const [currentPillNumber, setCurrentPillNumber] = useState<number>(1);
+  const [inBreakPeriod, setInBreakPeriod] = useState<boolean>(false);
+  const [breakDayNumber, setBreakDayNumber] = useState<number>(1);
+  const [alreadyTakenToday, setAlreadyTakenToday] = useState<boolean>(false);
+
   const [reminders, setReminders] = useState({
     initial: true,
     after30m: true,
@@ -81,11 +95,13 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // État de calcul simulé pour l'étape 6
+  // État de calcul simulé
   const [calculationProgress, setCalculationProgress] = useState<number>(0);
 
-  const totalSteps = 7;
+  const totalSteps = 8;
   const progressPercent = Math.round((step / totalSteps) * 100);
+
+  const selectedPack = PACK_TYPES.find((p) => p.id === packType) || PACK_TYPES[0];
 
   // Choix de l'humeur de Pilly selon l'étape
   const getPillyMood = (): MascotMood => {
@@ -94,16 +110,16 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
       case 1:
         return 'waving';
       case 2:
-        return 'thinking';
       case 3:
+      case 5:
         return 'thinking';
       case 4:
         return 'cautious';
-      case 5:
-        return 'happy';
       case 6:
-        return 'excited';
+        return 'happy';
       case 7:
+        return 'excited';
+      case 8:
         return 'proud';
       default:
         return 'happy';
@@ -124,10 +140,14 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
       case 4:
         return "Chaque formule est unique ! Comment est organisée ta plaquette ?";
       case 5:
-        return "Je veille sur toi : si tu n’as pas validé à l’heure, je t’envoie un rappel à +30min puis à +1h. Ça te convient ?";
+        return inBreakPeriod
+          ? "Tu es en pause de plaquette ! Quel jour de pause traverses-tu aujourd'hui ?"
+          : `À quel comprimé en es-tu aujourd'hui ? Comme ça, je cale ton calendrier pile au bon endroit !`;
       case 6:
-        return "Génial ! Je calcule ton plan personnalisé et je configure tes rappels...";
+        return "Je veille sur toi : si tu n’as pas validé à l’heure, je t’envoie un rappel à +30min puis à +1h. Ça te convient ?";
       case 7:
+        return "Génial ! Je calcule ton plan personnalisé et je positionne ton jour de cycle...";
+      case 8:
         return `Tout est prêt ${firstName || ''} ! Crée ton compte pour sauvegarder ton suivi et le synchroniser sur ton téléphone et ton PC 📲`;
       default:
         return "C'est parti !";
@@ -141,16 +161,16 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
       setErrorMessage('Dis-moi comment tu t’appelles pour qu’on fasse connaissance !');
       return;
     }
-    if (step === 5) {
+    if (step === 6) {
       // Étape d'animation calculatoire (comme les apps de sport)
-      setStep(6);
+      setStep(7);
       let p = 0;
       const interval = setInterval(() => {
         p += 25;
         setCalculationProgress(p);
         if (p >= 100) {
           clearInterval(interval);
-          setTimeout(() => setStep(7), 600);
+          setTimeout(() => setStep(8), 600);
         }
       }, 400);
       return;
@@ -183,7 +203,6 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
           );
         }
       } else {
-        // Fallback local
         const localUser = { id: `local-${Date.now()}`, email };
         localStorage.setItem('pillflow_user', JSON.stringify(localUser));
         onComplete(localUser, {});
@@ -201,7 +220,14 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
     setLoading(true);
     setErrorMessage(null);
 
-    const selectedPack = PACK_TYPES.find((p) => p.id === packType) || PACK_TYPES[0];
+    // Calcul précis de la date de début du cycle actuel en fonction du comprimé renseigné
+    const today = new Date();
+    const dayOffset = inBreakPeriod
+      ? selectedPack.activeDays + (breakDayNumber - 1)
+      : Math.max(0, currentPillNumber - 1);
+
+    const cycleStartDate = format(subDays(today, dayOffset), 'yyyy-MM-dd');
+    const todayStr = format(today, 'yyyy-MM-dd');
 
     const userSettings: Partial<PillSettings> = {
       pill_name: pillName,
@@ -209,6 +235,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
       scheduled_time: scheduledTime,
       pack_active_days: selectedPack.activeDays,
       pack_break_days: selectedPack.breakDays,
+      cycle_start_date: cycleStartDate,
       reminders_enabled: true,
       remind_at_pill_time: reminders.initial,
       remind_after_30m: reminders.after30m,
@@ -217,7 +244,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
 
     try {
       if (isSupabaseConfigured() && supabase) {
-        // Créer l'utilisateur dans Supabase Auth
+        // 1. Créer le compte dans Supabase Auth
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email,
           password,
@@ -232,33 +259,56 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
 
         const userId = authData.user?.id || 'demo-user-id';
 
-        // Enregistrer les réglages personnalisés choisis dans le questionnaire
+        // 2. Enregistrer les réglages personnalisés
         await supabase.from('pill_settings').upsert({
           user_id: userId,
           ...userSettings,
         });
 
-        // Confettis de bienvenue
+        // 3. Si l'utilisateur a indiqué avoir déjà pris son comprimé aujourd'hui
+        if (alreadyTakenToday && !inBreakPeriod) {
+          await supabase.from('pill_logs').upsert({
+            user_id: userId,
+            date: todayStr,
+            status: 'taken',
+            taken_at: new Date().toISOString(),
+            notes: `Comprimé n°${currentPillNumber} validé lors du questionnaire`,
+          });
+        }
+
         confetti({
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 },
         });
 
-        onComplete({ id: userId, email }, userSettings);
+        onComplete({ id: userId, email }, userSettings, alreadyTakenToday);
       } else {
         // Mode local
         const localUser = { id: `local-${Date.now()}`, email };
         localStorage.setItem('pillflow_user', JSON.stringify(localUser));
         localStorage.setItem('pillflow_settings', JSON.stringify(userSettings));
 
+        if (alreadyTakenToday && !inBreakPeriod) {
+          const initLogs: Record<string, any> = {};
+          initLogs[todayStr] = {
+            id: `init-${todayStr}`,
+            date: todayStr,
+            status: 'taken',
+            taken_at: new Date().toISOString(),
+            delay_minutes: 0,
+            notes: `Comprimé n°${currentPillNumber} validé`,
+          };
+          localStorage.setItem('pillflow_logs', JSON.stringify(initLogs));
+        }
+
         confetti({
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 },
         });
 
-        onComplete(localUser, userSettings);
+        onComplete(localUser, userSettings, alreadyTakenToday);
       }
     } catch (err: any) {
       setErrorMessage(err?.message || 'Impossible de créer le compte. Vérifiez les informations.');
@@ -463,7 +513,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
               </div>
             )}
 
-            {/* Étape 4 : Structure de la plaquette */}
+            {/* Étape 4 : Format de la plaquette */}
             {step === 4 && (
               <div className="space-y-4 animate-in fade-in">
                 <h3 className="font-bold text-lg text-slate-800">Format de ta plaquette</h3>
@@ -474,7 +524,11 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                       <button
                         key={pack.id}
                         type="button"
-                        onClick={() => setPackType(pack.id)}
+                        onClick={() => {
+                          setPackType(pack.id);
+                          setCurrentPillNumber(1);
+                          setInBreakPeriod(false);
+                        }}
                         className={`w-full p-4 rounded-2xl border-2 text-left flex items-start gap-3 transition cursor-pointer ${
                           isSelected
                             ? 'border-rose-500 bg-rose-50/60 ring-1 ring-rose-200'
@@ -493,8 +547,134 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
               </div>
             )}
 
-            {/* Étape 5 : Rappels échelonnés (la demande spéciale de l'utilisateur) */}
+            {/* Étape 5 (NOUVEAU) : Où en es-tu dans ta plaquette aujourd'hui ? */}
             {step === 5 && (
+              <div className="space-y-5 animate-in fade-in">
+                <div>
+                  <h3 className="font-bold text-lg text-slate-800">
+                    Où en es-tu aujourd'hui ?
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Sélectionne le numéro du comprimé correspondant à aujourd'hui pour positionner ta plaquette avec précision.
+                  </p>
+                </div>
+
+                {!inBreakPeriod ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-3 bg-rose-50 p-3 rounded-2xl border border-rose-100">
+                      <span className="text-xs font-semibold text-slate-700">Comprimé sélectionné :</span>
+                      <span className="text-base font-extrabold text-rose-600 bg-white px-3 py-1 rounded-xl shadow-xs">
+                        Comprimé n°{currentPillNumber} / {selectedPack.activeDays}
+                      </span>
+                    </div>
+
+                    {/* Grille tactile des numéros de comprimés */}
+                    <div className="grid grid-cols-7 gap-1.5 sm:gap-2 max-h-48 overflow-y-auto p-1 bg-slate-50 rounded-2xl border border-slate-100">
+                      {Array.from({ length: selectedPack.activeDays }, (_, i) => i + 1).map((num) => {
+                        const isSelected = currentPillNumber === num;
+                        return (
+                          <button
+                            key={num}
+                            type="button"
+                            onClick={() => setCurrentPillNumber(num)}
+                            className={`h-9 sm:h-10 rounded-xl text-xs font-bold transition flex items-center justify-center cursor-pointer ${
+                              isSelected
+                                ? 'bg-gradient-to-tr from-rose-500 to-pink-500 text-white shadow-md scale-105'
+                                : 'bg-white hover:bg-rose-50 text-slate-700 border border-slate-200'
+                            }`}
+                          >
+                            {num}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {selectedPack.breakDays > 0 && (
+                      <div className="text-center mt-3">
+                        <button
+                          type="button"
+                          onClick={() => setInBreakPeriod(true)}
+                          className="text-xs text-rose-600 hover:text-rose-800 underline font-medium cursor-pointer"
+                        >
+                          ☕ Je suis actuellement dans ma semaine de pause
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800">
+                        Jour de pause en cours :
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setInBreakPeriod(false)}
+                        className="text-xs text-rose-600 underline font-medium cursor-pointer"
+                      >
+                        Revenir aux comprimés actifs
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-7 gap-2">
+                      {Array.from({ length: selectedPack.breakDays }, (_, i) => i + 1).map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setBreakDayNumber(d)}
+                          className={`p-2.5 rounded-xl text-center text-xs font-bold transition cursor-pointer ${
+                            breakDayNumber === d
+                              ? 'bg-slate-800 text-white'
+                              : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          Jour {d}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Question : As-tu déjà pris le comprimé aujourd'hui ? */}
+                {!inBreakPeriod && (
+                  <div className="pt-4 border-t border-slate-100">
+                    <label className="block text-xs font-bold text-slate-700 mb-2">
+                      As-tu déjà pris ton comprimé d'aujourd'hui ?
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setAlreadyTakenToday(true)}
+                        className={`p-3 rounded-2xl border-2 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+                          alreadyTakenToday
+                            ? 'border-emerald-500 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200'
+                            : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                        }`}
+                      >
+                        <Check className="w-4 h-4 text-emerald-600" />
+                        <span>Oui, déjà pris</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setAlreadyTakenToday(false)}
+                        className={`p-3 rounded-2xl border-2 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+                          !alreadyTakenToday
+                            ? 'border-rose-500 bg-rose-50 text-rose-800 ring-1 ring-rose-200'
+                            : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                        }`}
+                      >
+                        <Clock className="w-4 h-4 text-rose-500" />
+                        <span>Pas encore pris</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Étape 6 : Rappels échelonnés (+30min et +1h) */}
+            {step === 6 && (
               <div className="space-y-4 animate-in fade-in">
                 <h3 className="font-bold text-lg text-slate-800">
                   La sécurité des 3 rappels intelligents
@@ -549,8 +729,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
               </div>
             )}
 
-            {/* Étape 6 : Animation de calcul personnalisé (Style sport app) */}
-            {step === 6 && (
+            {/* Étape 7 : Animation de calcul personnalisé (Style sport app) */}
+            {step === 7 && (
               <div className="text-center py-8 space-y-6 animate-in zoom-in-95">
                 <h3 className="font-bold text-lg text-slate-800">
                   Génération de ton rituel personnalisé...
@@ -566,22 +746,22 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
                 <div className="space-y-2 text-xs text-left max-w-xs mx-auto text-slate-600">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Pilule sélectionnée : {pillName}</span>
+                    <span>Position : {inBreakPeriod ? `Pause (Jour ${breakDayNumber})` : `Comprimé n°${currentPillNumber}`}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Fenêtre de sécurité : {tolerance}h calculée</span>
+                    <span>Pilule : {pillName} ({tolerance}h de marge)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Algorithme des 3 rappels activé</span>
+                    <span>Rappels synchronisés à {scheduledTime}</span>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Étape 7 : Création de compte pour débloquer l'accès */}
-            {step === 7 && (
+            {/* Étape 8 : Création de compte pour débloquer l'accès */}
+            {step === 8 && (
               <form onSubmit={handleSignUp} className="space-y-4 animate-in fade-in">
                 <div className="text-center pb-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-rose-500">
@@ -642,7 +822,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) =>
             )}
 
             {/* Boutons Suivant / Retour du Quiz */}
-            {step < 6 && (
+            {step < 7 && (
               <div className="flex items-center justify-between pt-6 border-t border-slate-100 mt-6">
                 {step > 1 ? (
                   <button
